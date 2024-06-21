@@ -1,0 +1,14 @@
+project:
+  title: "cicada_data"
+
+execute: 
+  cache: true
+  freeze: auto
+
+format:
+    html:
+        theme:
+            - darkly
+            - styles.scss
+
+editor: visual
