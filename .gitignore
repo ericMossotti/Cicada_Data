@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.html
+cicada_data_files*/**
+.Rprofile
+data*/**
+*.Rproj
