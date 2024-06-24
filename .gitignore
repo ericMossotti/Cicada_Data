@@ -9,3 +9,4 @@ data*/**
 *.Rproj
 /.quarto/
 cicada_data_cache*/**
+__pycache__*/**
