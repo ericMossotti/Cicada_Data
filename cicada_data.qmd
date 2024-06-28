@@ -86,7 +86,8 @@ structure = {
     "02_Load/": ["data/", "scripts/"]
 }
 
-# If moving folders, just change "" to something else
+# Create the analysis folder structure in a preferred base directory
+# "" = project's working directory
 directorize("", structure)
 ```
 
@@ -105,7 +106,7 @@ fileMap = {url: fpath}
 importer(fileMap)
 ```
 
-Contigs are crucial in accurately reconstructing the DNA sequence in a specific region. Scaffolds extend this by aligning contigs in a probable order, bridging the gaps with estimated sequences or placeholders.
+**Contigs** are crucial in accurately reconstructing the DNA sequence in a specific region. **Scaffolds** extend this by aligning contigs in a probable order, bridging the gaps with estimated sequences or placeholders.
 
 # Transform
 
@@ -139,7 +140,7 @@ summary_stats=01_Transform/data/summary_stats.txt
 assembly_stats $fasta > $summary_stats
 ```
 
-Now we transform the text file into a Python dataframe.
+Transform the text file into a Python dataframe. I am opting to not to blanket change data-types as output format could vary by user preference. Converting everything to floats has unintended consequences as does converting everything to integers. I don't need to perform any further calculations with this data, so strings seem fine.
 
 ```{r}
 ##| include: false
@@ -156,13 +157,11 @@ reticulate::source_python("01_Transform/scripts/assemblyFramer.py")
 ```
 
 ```{python}
+#| label: run_assemblyFramer
 
 statsPath = "01_Transform/data/summary_stats.txt"
 
 stats_df = assemblyFramer(statsPath)
-
-stats_df.loc[("Contigs","L20")]
-stats_df.loc[("Scaffolds", "L20")]
 
 ```
 
@@ -170,17 +169,54 @@ stats_df.loc[("Scaffolds", "L20")]
 
 In this stage, the dataframe can be easily queried and the specific stats quickly loaded into the table.
 
+```{r}
+#| include: true
+reticulate::source_python("02_Load/scripts/strint.py")
+
+```
+
+```{python}
+#| label: strint_view
+#| code-summary: For adjusting output formatting of the stats.
+#| file: "02_Load/scripts/strint.py"
+#| eval: false 
+
+```
+
+```{python}
+#| label: tableVariables
+#| code-summary: Set all of the table values.
+
+ctig_len = strint(stats_df, "Contigs", "total_bps")
+ctig_count = strint(stats_df, "Contigs", "sequence_count")
+ctig_n50 = strint(stats_df, "Contigs", "N50")
+ctig_max = strint(stats_df, "Contigs", "longest")
+
+sfld_len = strint(stats_df, "Scaffolds", "total_bps")
+sfld_count = strint(stats_df, "Scaffolds", "sequence_count")
+sfld_n50 = strint(stats_df, "Scaffolds", "N50")
+sfld_max = strint(stats_df, "Scaffolds", "longest")
+
+```
+
+```{r}
+#| label: load_reticulate
+#| code-summary: To make the variable calls simpler in the table below. See source code to better understand.
+
+library(reticulate)
+```
+
 ## Tables
 
 |                        |                       |                     |                         |
-|------------------|------------------|------------------|-------------------|
+|------------------|------------------|------------------|------------------|
 | **Contig length (bp)** | **Number of contigs** | **Contig N50 (bp)** | **Longest contig (bp)** |
-|                        |                       |                     |                         |
+| `{r} py$ctig_len`      | `{r} py$ctig_count`   | `{r} py$ctig_n50`   | `{r} py$ctig_max`       |
 
 |                          |                         |                       |                           |
-|------------------|------------------|------------------|-------------------|
+|------------------|------------------|------------------|------------------|
 | **Scaffold length (bp)** | **Number of scaffolds** | **Scaffold N50 (bp)** | **Longest scaffold (bp)** |
-|                          |                         |                       |                           |
+| `{r} py$sfld_len`        | `{r} py$sfld_count`     | `{r} py$sfld_n50`     | `{r} py$ sfld_max`        |
 
 **The** **contig N50** is a statistical measure that represents the length of the longest contig (contiguous assembled sequence) for which the sum of the lengths of all contigs of equal or greater length is at least 50% of the total genome length. In other words, it is the length of the contig at which 50% of the genome assembly is contained in contigs of that length or longer. A higher contig N50 value indicates that the assembly contains fewer and longer contigs, which is generally desirable as it suggests a more contiguous and complete assembly. A lower contig N50 value indicates that the assembly is more fragmented, with shorter contigs.
 
