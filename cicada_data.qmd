@@ -9,7 +9,7 @@ bibliography: references.bib
 repo: https://github.com/ericMossotti/genomics
 source: genomics.qmd
 abstract-title: "Objective"
-abstract: "To reproduce the summary table on the cicada species summary statistics table."
+abstract: "To reproduce DNA Zoo's summary table on the 17-year cicada."
 description-meta: "Reproducible genomics analysis."
 license: CC BY-SA
 funding: "The author(s) received no specific funding for this work."
@@ -18,6 +18,7 @@ csl: csl/apa.csl
 citation-location: margin
 citations-hover: true
 link-citations: true
+citeproc: true
 
 toc-expand: true
 toc: true
@@ -27,10 +28,10 @@ smooth-scroll: true
 fig-responsive: true
 echo: true
 callout-appearance: simple
-
 code-fold: true
 
-engine: knitr
+filters:
+     - nutshell
 ---
 
 ```{r, include = FALSE}
@@ -39,51 +40,54 @@ engine: knitr
 
 # Introduction
 
+This project was made possible with Quarto. [@aboutqu]
+
 ## Problem
 
-Lack of documentation in bioinformatics research reporting. The steps involved to reproduce genomics data can be unclear.
+The steps involved in reproducing data can be unclear.
 
 ## Purpose
 
-To trail blaze a new trend in research reporting with respect to reproducibility. To address the well documented and ongoing reproducibility crisis, I seek to independently reproduce and supplement, in this case, bioinformatics research. This particular report aims to verify that a table related to a species of cicada is correct by programmatically reproducing it with publicly available bioinformatics tools.
+To elaborate on the objective stated at the top of this document, the purpose is to supplement the DNA Zoo's report with a more easily accessible data analysis (DA) pipeline. To accomplish this, I seek to independently reproduce and supplement their article's table while supplying all data processing steps with documented code embedded in the report itself. Although there's nothing wrong with the data or article, it could be taken further. [@dnazoo], [@magicica]
 
 ## Stakeholders
 
-I consider this work of particular interest to bioinformatics researchers. More generally, the spirit of this work could also transfer to other domains of data intensive research and analytics.
+This might be of interest to the original authors of the article. More generally, the spirit of this work could transfer to other domains of data intensive research and analytics.
 
 ## Source
 
-[@magicica]
+All data used within this report was freely available from a public database hosted by DNA Zoo. [@dnazoo.s]
 
 # Extract
 
+This would be the data extraction phase of the DA pipeline.
+
+## Create Project Directory
+
 ```{r}
-reticulate::source_python(
-    "00_Extract/scripts/importer.py")
+#| label: src_directorize.py
+
+reticulate::source_python("00_Extract/scripts/directorize.py")
 ```
 
 ```{python}
-#| label: importScript
-#| code-summary: For importing files.
-#| file: "00_Extract/scripts/importer.py"
+#| label: code_directorize.py
+#| code-summary: Code for creating the project's analysis directory.
+#| file: "00_Extract/scripts/directorize.py"
 #| eval: false 
 
 ```
 
-```{r}
-reticulate::source_python("directorize.py")
-```
-
 ```{python}
-#| label: directorating
-#| eval: false
-#| code-summary: Does not need to be evaluated during quarto render. Please run this locally for initializing project folder structure. 
+#| label: exe_directorize.py
+#| code-summary: Does not need to be evaluated during quarto render. Please run this locally for initializing the project directory structure. 
 
 # Define the directory structure
 structure = {
     "00_Extract/": ["data/", "scripts/"],
     "01_Transform/": ["data/", "scripts/"],
-    "02_Load/": ["data/", "scripts/"]
+    "02_Load/": ["data/", "scripts/"],
+    "03_Present/": ["data/", "scripts/"]
 }
 
 # Create the analysis folder structure in a preferred base directory
@@ -91,8 +95,24 @@ structure = {
 directorize("", structure)
 ```
 
+## Download to Local Machine
+
+```{r}
+#| label: src_importer.py
+reticulate::source_python(
+    "00_Extract/scripts/importer.py")
+```
+
 ```{python}
-#| label: importChunk
+#| label: code_importer.py
+#| code-summary: For importing files.
+#| file: "00_Extract/scripts/importer.py"
+#| eval: false 
+
+```
+
+```{python}
+#| label: exe_importer.py
 
 # Set the url
 url = "https://dnazoo.s3.wasabisys.com/Magicicada_septendecula/magicicada_hifiasm.asm.bp.p_ctg_HiC.fasta.gz"
@@ -106,17 +126,36 @@ fileMap = {url: fpath}
 importer(fileMap)
 ```
 
+::: callout-note
+## The specific link used to download all data from
+
+`{r} reticulate::py$url`
+:::
+
 **Contigs** are crucial in accurately reconstructing the DNA sequence in a specific region. **Scaffolds** extend this by aligning contigs in a probable order, bridging the gaps with estimated sequences or placeholders.
 
 # Transform
 
-## Decompress
+The data transformation phase of the pipeline.
+
+## Decompress .GZ
 
 ```{r}
+#| label: src_decompress.py
+
 reticulate::source_python("01_Transform/scripts/decompress.py")
 ```
 
 ```{python}
+#| label: code_decompress.py
+#| code-summary: Decompressing from .gz to .fasta file format.
+#| file: "01_Transform/scripts/decompress.py"
+#| eval: false 
+
+```
+
+```{python}
+#| label: exe_decompress.py
 
 # Set the compressed fasta.gz file variable
 gzFasta = "00_Extract/data/magicicada.fasta.gz"
@@ -127,7 +166,7 @@ fasta = "01_Transform/data/magicicada.fasta"
 decompress(gzFasta, fasta)
 ```
 
-This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` to `{bash}`. Not sure how else to go about accomplishing this.
+This chunk should be ran locally instead of with `quarto render`. If desired, when working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. Not sure how else to go about accomplishing this within Quarto.
 
 ``` bash
 
@@ -140,12 +179,11 @@ summary_stats=01_Transform/data/summary_stats.txt
 assembly_stats $fasta > $summary_stats
 ```
 
-Transform the text file into a Python dataframe. I am opting to not to blanket change data-types as output format could vary by user preference. Converting everything to floats has unintended consequences as does converting everything to integers. I don't need to perform any further calculations with this data, so strings seem fine.
+Transform the text file into a Python dataframe. I am opting to not to blanket change data-types as output format could vary by user preference.
 
 ```{r}
-##| include: false
+# Import  external python script to local library environment
 reticulate::source_python("01_Transform/scripts/assemblyFramer.py")
-
 ```
 
 ```{python}
@@ -159,20 +197,20 @@ reticulate::source_python("01_Transform/scripts/assemblyFramer.py")
 ```{python}
 #| label: run_assemblyFramer
 
+# Set the local text file path
 statsPath = "01_Transform/data/summary_stats.txt"
-
+# Run to yield an multi-indexed dataframe
 stats_df = assemblyFramer(statsPath)
-
 ```
 
 # Load
 
-In this stage, the dataframe can be easily queried and the specific stats quickly loaded into the table.
+This is the data loading phase. Following completion of this stage, querying the data should be more intuitive than before.
 
 ```{r}
 #| include: true
-reticulate::source_python("02_Load/scripts/strint.py")
 
+reticulate::source_python("02_Load/scripts/strint.py")
 ```
 
 ```{python}
@@ -199,6 +237,19 @@ sfld_max = strint(stats_df, "Scaffolds", "longest")
 
 ```
 
+::: {.callout-tip appearance="simple"}
+## Python query syntax made easier
+
+```{python}
+#| eval: false
+#| code-fold: false
+#| echo: true
+
+ctig_len = strint(dataframe, category, label)
+
+```
+:::
+
 ```{r}
 #| label: load_reticulate
 #| code-summary: To make the variable calls simpler in the table below. See source code to better understand.
@@ -206,7 +257,26 @@ sfld_max = strint(stats_df, "Scaffolds", "longest")
 library(reticulate)
 ```
 
-## Tables
+# Present
+
+## The Pandas Table
+
+This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic.
+
+```{r}
+#| label: src_style_df.py
+
+reticulate::source_python("03_Present/scripts/style_df.py")
+```
+
+```{python}
+
+styldf = style_df(stats_df, cap = "Summary")
+
+styldf
+```
+
+## DNA Zoo's Table, Reproduced
 
 |                        |                       |                     |                         |
 |------------------|------------------|------------------|------------------|
@@ -227,5 +297,6 @@ library(reticulate)
 [De novo assembly of the Aedes aegypti genome using Hi-C yields chromosome-length scaffolds \| Science](https://www.science.org/doi/10.1126/science.aal3327)
 
 ```{mermaid}
+
 
 ```
