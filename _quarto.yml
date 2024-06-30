@@ -2,8 +2,8 @@ project:
   title: "cicada_data"
 
 execute: 
-  cache: true
-  freeze: auto
+  cache: false
+  freeze: false
 
 format:
     html:
