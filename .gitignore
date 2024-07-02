@@ -10,3 +10,4 @@ data*/**
 /.quarto/
 cicada_data_cache*/**
 __pycache__*/**
+draft.qmd
