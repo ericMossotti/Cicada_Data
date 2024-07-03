@@ -1,2 +1,29 @@
 /*-- scss:defaults --*/
 $theme: "darkly" !default;
+
+$mermaid-bg-color: #222 !default;
+
+$mermaid-fg-color: #222 !default;
+$mermaid-fg-color--lightest: lighten($mermaid-fg-color, 15%) !default;
+$mermaid-fg-color--lighter: lighten($mermaid-fg-color, 8%) !default;
+
+$mermaid-label-fg-color: white !default;
+$mermaid-label-bg-color: lighten($mermaid-bg-color, 5%) !default;
+
+$mermaid-node-fg-color: Green !default;
+$mermaid-node-bg-color: lighten($mermaid-bg-color, 5%) !default;
+
+$mermaid-edge-color: Green !default;
+
+:root {
+  --mermaid-bg-color: #{$mermaid-bg-color};
+  --mermaid-edge-color: #{$mermaid-edge-color};
+ // --mermaid-fg-color: #{$mermaid-fg-color};
+  --mermaid-fg-color--lighter: #{$mermaid-fg-color--lighter};
+  --mermaid-fg-color--lightest: #{$mermaid-fg-color--lightest};
+  //--mermaid-font-family: #{$mermaid-font-family};
+  --mermaid-label-bg-color: #{$mermaid-label-bg-color};
+  --mermaid-label-fg-color: #{$mermaid-label-fg-color};
+  --mermaid-node-bg-color: #{$mermaid-node-bg-color};
+  --mermaid-node-fg-color: #{$mermaid-node-fg-color};
+}
