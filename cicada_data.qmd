@@ -40,8 +40,6 @@ filters:
 
 # Introduction
 
-This project was made possible with Quarto. [@aboutqu]
-
 ## Problem
 
 The steps involved in reproducing data can be unclear.
@@ -57,6 +55,50 @@ This might be of interest to the original authors of the article. More generally
 ## Source
 
 All data used within this report was freely available from a public database hosted by DNA Zoo. [@dnazoo.s]
+
+## Pipeline
+
+::: column-screen-inset
+```{mermaid}
+
+flowchart LR
+    A((1)):::circle --> B((2)):::circle
+    B --> C((3)):::circle
+    C --> D((4)):::circle
+
+    subgraph Extract ["1. Extract"]
+        direction TB
+        A1[Create DA directory] --> A2[Download & store data]
+    end
+
+    subgraph Transform ["2. Transform"]
+        direction TB
+        B1[Decompress fasta.gz] --> B2[Run assembly_stats]
+        B2 --> B3[Process stats]
+    end
+
+    subgraph Load ["3. Load"]
+        direction TB
+        C1[Reformat statistics]
+    end
+
+    subgraph Present ["4. Present"]
+        direction TB
+        D1[Convert to R] --> D2[Create formatted dataframe]
+        D2 --> D3[Final presentation]
+    end
+
+    A ~~~ Extract
+    B ~~~ Transform
+    C ~~~ Load
+    D ~~~ Present
+
+    A2 -.-|magicicada.fasta.gz| B1
+    B3 -.-|dataframe| C1
+    C1 -.-|strings| D1
+
+```
+:::
 
 # Extract
 
@@ -165,9 +207,7 @@ fasta = "01_Transform/data/magicicada.fasta"
 decompress(gzFasta, fasta)
 ```
 
-This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely to the div. Not sure how else to go about accomplishing this within my current Quarto project setup.
-
-[@trizna2020]
+This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely to the div. Not sure how else to go about accomplishing this within my current Quarto project setup. [@trizna2020]
 
 ``` bash
 # BASH SCRIPT
@@ -279,8 +319,8 @@ n_colors1 = len(df.index.levels[0])
 n_colors2 = len(df.index.levels[1]) + len(df.columns)
 
 # Adjust color palettes easily
-palette1 = sns.color_palette("husl", n_colors = n_colors1)
-palette2 = sns.color_palette("Set2", n_colors = n_colors2)
+palette1 = sns.color_palette("Pastel2", n_colors = n_colors1)
+palette2 = sns.color_palette("husl", n_colors = n_colors2)
 
 # Map index levels and column names to colors with dictionaries
 color_dict1 = dict(zip(df.index.levels[0], palette1))
@@ -290,34 +330,26 @@ color_dict2 = dict(zip(list(
 
 # Call function
 forma_df = formaFrame(df, color_dict1, color_dict2)
+# The columns headers are kinda sketchy, so will hide them.
 forma_df = forma_df.hide(axis = "index", names = True)
 forma_df = forma_df.hide(axis = "columns", level = 0)
 
-
 forma_df
-# now to change the table 
 ```
 
 ```{python}
 
+# To access the original dataframe object
 forma_df.data
 ```
 
 ## DNA Zoo's Table, Reproduced
 
-|                        |                       |                     |                         |
-|------------------|------------------|------------------|-------------------|
-| **Contig length (bp)** | **Number of contigs** | **Contig N50 (bp)** | **Longest contig (bp)** |
-| `{r} py$ctig_len`      | `{r} py$ctig_count`   | `{r} py$ctig_n50`   | `{r} py$ctig_max`       |
-
 |                          |                         |                       |                           |
 |------------------|------------------|------------------|-------------------|
+| **Contig length (bp)**   | **Number of contigs**   | **Contig N50 (bp)**   | **Longest contig (bp)**   |
+| `{r} py$ctig_len`        | `{r} py$ctig_count`     | `{r} py$ctig_n50`     | `{r} py$ctig_max`         |
 | **Scaffold length (bp)** | **Number of scaffolds** | **Scaffold N50 (bp)** | **Longest scaffold (bp)** |
 | `{r} py$sfld_len`        | `{r} py$sfld_count`     | `{r} py$sfld_n50`     | `{r} py$ sfld_max`        |
 
 [De novo assembly of the Aedes aegypti genome using Hi-C yields chromosome-length scaffolds \| Science](https://www.science.org/doi/10.1126/science.aal3327)
-
-```{mermaid}
-
-
-```
