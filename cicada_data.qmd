@@ -38,27 +38,26 @@ filters:
 #knitr::opts_chunk$set(engine.opts = list(bash = "-l"))
 ```
 
-# Introduction
+# Introduction {.unnumbered}
 
-## Problem
+## Problem {.unnumbered}
 
 The steps involved in reproducing data can be unclear.
 
-## Purpose
+## Purpose {.unnumbered}
 
 To elaborate on the objective stated at the top of this document, the purpose is to supplement the DNA Zoo's report with a more easily accessible data analysis (DA) pipeline. To accomplish this, I seek to independently reproduce and supplement their article's table while supplying all data processing steps with documented code embedded in the report itself. Although there's nothing wrong with the data or article, it could be taken further. [@dnazoo], [@magicica]
 
-## Stakeholders
+## Stakeholders {.unnumbered}
 
 This might be of interest to the original authors of the article. More generally, the spirit of this work could transfer to other domains of data intensive research and analytics.
 
-## Source
+## Source {.unnumbered}
 
 All data used within this report was freely available from a public database hosted by DNA Zoo. [@dnazoo.s]
 
-## Pipeline
+# Pipeline {.unnumbered .column-screen-inset}
 
-::: column-screen-inset
 ```{mermaid}
 
 flowchart LR
@@ -98,7 +97,7 @@ flowchart LR
     C1 -.-|strings| D1
 
 ```
-:::
+
 
 # Extract
 
@@ -276,11 +275,12 @@ reticulate::source_python("02_Load/scripts/strint.py")
 #| label: run_strint.py
 #| code-summary: Runs strint(), with the simpflified query syntax noted earlier. One can simply specify the literal 'Category' and 'Label' keys to return the desired value.
 
+#---- Contigs
 ctig_len = strint(df, "Contigs", "total_bps")
 ctig_count = strint(df, "Contigs", "sequence_count")
 ctig_n50 = strint(df, "Contigs", "N50")
 ctig_max = strint(df, "Contigs", "longest")
-
+#---- Scaffolds
 sfld_len = strint(df, "Scaffolds", "total_bps")
 sfld_count = strint(df, "Scaffolds", "sequence_count")
 sfld_n50 = strint(df, "Scaffolds", "N50")
@@ -306,12 +306,16 @@ stat = dataframe.loc[(category, label), "Value"]
 ```
 :::
 
-
 # Present
 
 ## The Pandas Table
 
-This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, DataFrame object, use the `forma_df.data` syntax.
+This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, dataframe object, use the `forma_df.data` syntax.
+
+
+:::{.d-flex}
+[[:The original dataframe output:](#NutFrame)]{style="color: yellow"}
+:::
 
 ```{r}
 #| label: src_style_df.py
@@ -353,9 +357,7 @@ forma_df = forma_df.hide(axis = "columns", level = 0)
 forma_df
 ```
 
-
 ## DNA Zoo's Table, Reproduced
-
 
 ```{r}
 #| label: load_reticulate
@@ -364,7 +366,7 @@ forma_df
 library(reticulate)
 ```
 
-Importing the library makes the code a little bit cleaner for inserting the values into the table below. For example, I would have had to type ``{r} reticulate::py$ctig_N50``, but now I can just type ``{r} py$ctig_N50`` into the individual cells. I needed to convert the values into r objects, as the knitr engine used in rendering this document does not seem display output from execution of inline Python code directly.
+Importing the library makes the code a little bit cleaner for inserting the values into the table below. For example, I would have had to type `{r} reticulate::py$ctig_n50`, but now I can just type `{r} py$ctig_n50` into the individual cells. I needed to convert the values into r objects, as the knitr engine used in rendering this document does not seem display output from execution of inline Python code directly.
 
 |                          |                         |                       |                           |
 |------------------|------------------|------------------|-------------------|
@@ -374,3 +376,13 @@ Importing the library makes the code a little bit cleaner for inserting the valu
 | `{r} py$sfld_len`        | `{r} py$sfld_count`     | `{r} py$sfld_n50`     | `{r} py$ sfld_max`        |
 
 [De novo assembly of the Aedes aegypti genome using Hi-C yields chromosome-length scaffolds \| Science](https://www.science.org/doi/10.1126/science.aal3327)
+
+
+# :x NutFrame {.unnumbered .unlisted}
+```{python}
+#| label: nutshFrame
+#| code-summary: The dataframe object on display, in all its glory.
+# A simple call on the Styler object
+forma_df.data
+```
+
