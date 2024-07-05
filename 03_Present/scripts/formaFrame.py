@@ -1,4 +1,3 @@
-#---- 
 
 """
 This gives a color scheme that visually distinguishes the first level 
@@ -14,28 +13,32 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 
+#---- formaFrame()
 
 def formaFrame(df, color_dict1, color_dict2):
     
     # Apply the styling to indices
     styled_df = df.style.map_index(color_index, axis = 0)
+    
     # Apply styling to the value column
     styled_df = styled_df.apply(color_values, axis = 0)
     
     # Return the styled df
     return styled_df
 
+#---- color_values()
+
 # To color the Value column the same as the Label index 
 def color_values(s):
     
     return [color_to_rgba(color_dict2[idx[1]]) for idx in s.index]
 
-
 # Create the rgb values
-def color_to_rgba(color, alpha = 0.5):
-    
+def color_to_rgba(color, alpha = .2):
     return f'background-color: rgba({", ".join(f"{int(c*255)}" for c in color)}, {alpha})'
 
+
+#---- color_index()
 
 def color_index(index):
     
@@ -53,4 +56,3 @@ def color_index(index):
     
     else:
         return ''
-

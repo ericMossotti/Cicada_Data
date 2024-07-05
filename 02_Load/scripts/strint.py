@@ -1,16 +1,16 @@
-"""
-Format string representation of an integer value
-as a comma separated string
-"""
+""" Formats the string representation of an 
+integer value as a comma separated string. """
 
 import pandas as pd
 import re
+
 
 # Format output with comma seperator for thousands place
 def strint (dataframe, category, label):
     
     # Find the desired value
     stat = dataframe.loc[(category, label), "Value"]
+    
     # Set boolean match value
     isFloat = re.search(r"\.", stat)
     

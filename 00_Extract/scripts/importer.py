@@ -6,7 +6,7 @@ import wget
 def importer (fileMap):
     # Download from URL to path and notify when complete
     for url, file_path in fileMap.items():
-        # Check if file exists before downloading
+        # Checking file existence
         if not os.path.exists(file_path):
             wget.download(url, file_path)
             print(f"{file_path} written")
