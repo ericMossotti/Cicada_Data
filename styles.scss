@@ -12,15 +12,36 @@ $mermaid-node-bg-color: lighten($mermaid-bg-color, 5%) !default;
 $mermaid-edge-color: Green !default;
 
 
-/*-- scss:selectors --*/
-p code {
-    background-color: #222 !important;
-    padding: .4em !important;
+/*-- scss:ids --*/
+
+#forma .row_heading.level0.row0,
+#forma .row_heading.level0.row17 {
+  text-align: center;
+  vertical-align: middle;
 }
 
-details>summary code {
-  background-color: #222 !important;
+
+/*-- scss:classes --*/
+
+// Colors only the dataframe output inside the nutshell bubble //
+.nutshell-bubble pre code {
+  color: orange !important;
 }
+
+
+
+/*-- scss:selectors --*/
+p code {
+  color: #a64dff !important;
+  background-color: #222 !important;
+  padding: .4em !important;
+}
+
+
+details>summary code {
+  background-color: #222;
+}
+
 
 
 /*-- scss:roots --*/
