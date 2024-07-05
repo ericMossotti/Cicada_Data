@@ -5,7 +5,6 @@
 *.html
 cicada_data_files*/**
 .Rprofile
-*/data*/**
 *.Rproj
 /.quarto/
 cicada_data_cache*/**
