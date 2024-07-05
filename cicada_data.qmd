@@ -208,7 +208,7 @@ decompress(gzFasta, fasta)
 
 This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely to the div. Not sure how else to go about accomplishing this within my current Quarto project setup. [@trizna2020]
 
-``` bash
+``` {bash}
 # BASH SCRIPT
 
 # The uncompressed fasta file variable
@@ -372,7 +372,6 @@ Importing the library makes the code a little bit cleaner for inserting the valu
 | `{r} py$ctig_len`        | `{r} py$ctig_count`     | `{r} py$ctig_n50`     | `{r} py$ctig_max`         |
 | **Scaffold length (bp)** | **Number of scaffolds** | **Scaffold N50 (bp)** | **Longest scaffold (bp)** |
 | `{r} py$sfld_len`        | `{r} py$sfld_count`     | `{r} py$sfld_n50`     | `{r} py$ sfld_max`        |
-
 
 # :x NutFrame {.unnumbered .unlisted}
 
