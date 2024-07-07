@@ -5,11 +5,23 @@ $mermaid-bg-color: #222 !default;
 $mermaid-fg-color: #222 !default;
 $mermaid-fg-color--lightest: lighten($mermaid-fg-color, 15%) !default;
 $mermaid-fg-color--lighter: lighten($mermaid-fg-color, 8%) !default;
-$mermaid-label-fg-color: white !default;
+$mermaid-label-fg-color: #E0E0E0 !default;
 $mermaid-label-bg-color: lighten($mermaid-bg-color, 5%) !default;
-$mermaid-node-fg-color: Green !default;
+$mermaid-node-fg-color: #B0E0E6 !default;
 $mermaid-node-bg-color: lighten($mermaid-bg-color, 5%) !default;
-$mermaid-edge-color: Green !default;
+$mermaid-edge-color: #FF5722 !default;
+//FF5722 #98FB98
+
+/*-- scss:custom --*/
+$background-color: #222;
+$heading-1: #E0E0E0;
+$heading-2: #B0E0E6;
+$heading-3: #98FB98;
+$heading-4: #FFB6C1;
+$heading-5: #DDA0DD;
+$link-unvisited: #4CAF50;
+$link-visited: #9C27B0;
+$link-hover: #FF9800;
 
 
 /*-- scss:ids --*/
@@ -20,29 +32,79 @@ $mermaid-edge-color: Green !default;
   vertical-align: middle;
 }
 
+/*
+#mermaid-1 .cluster rect {
+  fill: #4CAF50 !important;
+}
+
+#mermaid-1 .node rect {
+  fill: Red !important;
+  
+}
+
+#mermaid-1 .edgeLabel rect {
+  fill: Yellow !important;
+}
+*/
+
 
 /*-- scss:classes --*/
+
+
 
 // Colors only the dataframe output inside the nutshell bubble //
 .nutshell-bubble pre code {
   color: orange !important;
 }
 
+.cell-output, .cell-output-stdout {
+  color: #EEE8AA !important;
+}
 
 
 /*-- scss:selectors --*/
+
+// Styles for headings
+h1 { color: $heading-1 !important; }
+h2 { color: $heading-2 !important; }
+h3 { color: $heading-3 !important; }
+h4 { color: $heading-4 !important; }
+h5 { color: $heading-5 !important; }
+
+
+a {
+  &:link {
+    color: $link-unvisited;
+    text-decoration: none;
+  }
+  &:visited {
+    color: $link-visited;
+  }
+  &:hover, &:focus {
+    color: $link-hover;
+    text-decoration: underline;
+  }
+  &:active {
+    color: $link-hover;
+  }
+}
+
+
 p code {
-  color: #a64dff !important;
+  color: #F08080 !important;
   background-color: #222 !important;
   padding: .4em !important;
 }
 
-
 details>summary code {
   background-color: #222;
+  color: #F08080 !important;
 }
 
-
+details>summary {
+  color: #A8E6CF !important;
+;
+}
 
 /*-- scss:roots --*/
 :root {
