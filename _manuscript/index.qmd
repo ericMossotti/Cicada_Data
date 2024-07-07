@@ -326,7 +326,7 @@ stat = dataframe.loc[(category, label), "Value"]
 This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, dataframe object, use the `forma_df.data` syntax.
 
 ::: d-flex
-[:The original dataframe output:](#NutFrame)
+[[:The original dataframe output:](#NutFrame)]{}
 :::
 
 ::: column-page-outset
@@ -385,7 +385,7 @@ library(reticulate)
 Importing the library makes the code a little bit cleaner for inserting the values into the table below. For example, I would have had to type `{r} reticulate::py$ctig_n50`, but now I can just type `{r} py$ctig_n50` into the individual cells. I needed to convert the values into r objects, as the knitr engine used in rendering this document does not seem display output from execution of inline Python code directly.
 
 |                          |                         |                       |                           |
-|--------------------------|-------------------------|-----------------------|---------------------------|
+|------------------|------------------|------------------|-------------------|
 | **Contig length (bp)**   | **Number of contigs**   | **Contig N50 (bp)**   | **Longest contig (bp)**   |
 | `{r} py$ctig_len`        | `{r} py$ctig_count`     | `{r} py$ctig_n50`     | `{r} py$ctig_max`         |
 | **Scaffold length (bp)** | **Number of scaffolds** | **Scaffold N50 (bp)** | **Longest scaffold (bp)** |
