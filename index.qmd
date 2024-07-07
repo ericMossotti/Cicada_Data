@@ -1,0 +1,401 @@
+---
+title: "Cicada Data"
+subtitle: "Data analysis reproduction concerning the cicada's genome."
+
+author: 
+    - name: "Eric Mossotti"
+      corresponding: true
+      email: ecmossotti@gmail.com
+      roles:
+        - Data analysis
+        - Project management
+
+keywords: 
+    - Genomics
+    - Data Analysis
+    - Data Engineering
+
+date: 07/06/2024
+date-modified: last-modified
+date-format: "MMM D, YYYY"
+
+bibliography: references.bib
+
+repo: https://github.com/ericMossotti/genomics
+source: genomics.qmd
+
+abstract-title: "Objective"
+abstract: |
+      To reproduce DNA Zoo's summary table on the 17-year cicada.
+      
+description-meta: "Reproducible genomics analysis."
+
+license: CC BY-SA
+funding: "The author(s) received no specific funding for this work."
+
+csl: csl/apa.csl
+citation-location: margin
+citations-hover: true
+link-citations: true
+citeproc: true
+
+toc-expand: true
+toc: true
+number-sections: true
+
+link-external-newwindow: true
+smooth-scroll: true
+fig-responsive: true
+echo: true
+callout-appearance: simple
+code-fold: show
+code-overflow: wrap
+
+filters:
+     - nutshell
+---
+
+## Introduction {.unnumbered}
+
+### Problem {.unnumbered}
+
+The steps involved in reproducing data can be unclear.
+
+### Purpose {.unnumbered}
+
+To elaborate on the objective stated at the top of this document, the purpose is to supplement the DNA Zoo's report with a more easily accessible data analysis (DA) pipeline. To accomplish this, I seek to independently reproduce and supplement their article's table while supplying all data processing steps with documented code embedded in the report itself. Although there's nothing wrong with the data or article, it could be taken further. [@dnazoo], [@magicica]
+
+### Stakeholders {.unnumbered}
+
+This might be of interest to the original authors of the article. More generally, the spirit of this work could transfer to other domains of data intensive research and analytics.
+
+### Source {.unnumbered}
+
+All data used within this report was freely available from a public database hosted by DNA Zoo. [@dnazoo.s]
+
+## Pipeline {.unnumbered}
+
+```{mermaid}
+%%| code-fold: true
+%%| code-summary: Create a Mermaid diagram from code.
+
+flowchart TB
+    A((1)):::circle --> B((2)):::circle
+    B --> C((3)):::circle
+    C --> D((4)):::circle
+    
+    subgraph Extract ["1. Extract"]
+        direction LR
+        A1["Create local\nanalysis directory"] --> A2["Download from web\nto local directory"]
+    end
+    subgraph Transform ["2. Transform"]
+        direction LR
+        B1["Decompress\nfasta.gz file"] --> B2["Output text file\nusing bash script"]
+        B2 --> B3["Transform text to\nindexed dataframe"]
+    end
+    subgraph Load ["3. Load"]
+        direction LR
+        C1["Format table values\nwith thousands-separator"]
+    end
+    subgraph Present ["4. Present"]
+        direction LR
+        D1["Create a Styler object\nfrom the dataframe"] --> D2["Dataframe is accessible\nfrom the Styler object"]
+        D2 --> D3["Reproduce DNA Zoo table\nusing Python to R conversion"]
+    end
+	
+    A ~~~ Extract
+    B ~~~ Transform
+    C ~~~ Load
+    D ~~~ Present
+	
+    Extract -.->|fasta.gz| Transform
+    Transform -.->|pd.DataFrame| Load
+    Load -.->|string variables| Present
+
+```
+
+## Extract
+
+This would be the data extraction phase of the DA pipeline.
+
+### Create Project Directory
+
+```{r}
+#| label: src_directorize.py
+#| code-summary: Source the external `directorize.py` script.
+
+reticulate::source_python("00_Extract/scripts/directorize.py")
+```
+
+```{python}
+#| label: code_directorize.py
+#| code-summary: This creates the project's analysis directory.
+#| file: "00_Extract/scripts/directorize.py"
+#| eval: false 
+```
+
+```{python}
+#| label: run_directorize.py
+#| code-summary: If the directory folders already exist, it shouldn't cause any issues to allow this code to evaluate during render.
+
+# Define the directory structure
+structure = {
+    "00_Extract/": ["data/", "scripts/"],
+    "01_Transform/": ["data/", "scripts/"],
+    "02_Load/": ["data/", "scripts/"],
+    "03_Present/": ["data/", "scripts/"]
+}
+
+# Create the analysis folder structure in a preferred base directory
+# "" = project's working directory
+directorize("", structure)
+```
+
+### Download to Local Machine
+
+```{r}
+#| label: src_importer.py
+#| code-summary: Source the `importer.py` script.
+
+reticulate::source_python(
+    "00_Extract/scripts/importer.py")
+```
+
+```{python}
+#| label: code_importer.py
+#| code-summary: This checks for and downloads the data. 
+#| file: "00_Extract/scripts/importer.py"
+#| eval: false 
+```
+
+```{python}
+#| label: run_importer.py
+#| code-summary: Run `importer()`, passing in the mapped URL to the local directory path destination.
+
+# Set the url
+url = "https://dnazoo.s3.wasabisys.com/Magicicada_septendecula/magicicada_hifiasm.asm.bp.p_ctg_HiC.fasta.gz"
+
+# Set the local file path
+fpath = "00_Extract/data/magicicada.fasta.gz"
+
+# Map the url to the file path
+fileMap = {url: fpath}
+
+importer(fileMap)
+```
+
+::: callout-note
+### The specific link used to download all data from
+
+<https://dnazoo.s3.wasabisys.com/Magicicada_septendecula/magicicada_hifiasm.asm.bp.p_ctg_HiC.fasta.gz>
+:::
+
+## Transform
+
+The data transformation phase of the pipeline.
+
+### Decompress .GZ
+
+```{r}
+#| label: src_decompress.py
+#| code-summary: Source the `decompress.py` script.
+
+reticulate::source_python("01_Transform/scripts/decompress.py")
+```
+
+```{python}
+#| label: code_decompress.py
+#| code-summary: This transforms the compressed file to its decompressed form.
+#| file: "01_Transform/scripts/decompress.py"
+#| eval: false 
+```
+
+```{python}
+#| label: run_decompress.py
+#| code-summary: Run `decompress()`, using the compressed path and the desired path to the decompressed file. 
+
+# Set the compressed fasta.gz file variable
+gzFasta = "00_Extract/data/magicicada.fasta.gz"
+
+# Set the decompressed fasta file variable
+fasta = "01_Transform/data/magicicada.fasta"
+
+# Pass file paths to the function
+decompress(gzFasta, fasta)
+```
+
+This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely to the div. Not sure how else to go about accomplishing this within my current Quarto project setup. [@trizna2020]
+
+``` bash
+# BASH SCRIPT
+
+# The uncompressed fasta file variable
+fasta=01_Transform/data/magicicada.fasta
+
+# The text file path variable generated by the script
+summary_stats=01_Transform/data/summary_stats.txt
+
+assembly_stats $fasta > $summary_stats
+```
+
+Transform the text file into a Python dataframe. I am opting to not to blanket change data-types as output format could vary by user preference.
+
+```{r}
+#| label: src_assemblyFramer.py
+#| code-summary: Source the `assemblyFramer.py` script.
+
+# Import  external python script to local library environment
+reticulate::source_python("01_Transform/scripts/assemblyFramer.py")
+```
+
+```{python}
+#| label: assemblyFramer_code_view
+#| code-summary: This code transforms text file data into a mult-indexed dataframe. Multi-indexing simplifies query syntax later on.
+#| file: "01_Transform/scripts/assemblyFramer.py"
+#| eval: false 
+```
+
+```{python}
+#| label: run_assemblyFramer
+#| code-summary: Run `assemblyFramer()`, passing in the path to the text file generated by running the Bash script from earlier. 
+
+# Set the local text file path
+statsPath = "01_Transform/data/summary_stats.txt"
+# Run to yield an multi-indexed dataframe
+df = assemblyFramer(statsPath)
+```
+
+## Load
+
+This is the data loading phase. Following completion of this stage, querying the data should be more intuitive than before.
+
+```{r}
+#| label: src_strint.py
+#| code-summary: Source the `strint.py` script.
+
+reticulate::source_python("02_Load/scripts/strint.py")
+```
+
+```{python}
+#| label: code_strint.py
+#| code-summary: This code transforms the strings in the value column of the dataframe to a more visually appealing, thousands-separated form.
+#| file: "02_Load/scripts/strint.py"
+#| eval: false 
+```
+
+```{python}
+#| label: run_strint.py
+#| code-summary: Calls `strint()`, with the simpflified query syntax noted earlier. One can simply specify the literal 'Category' and 'Label' keys to return the desired value.
+
+#---- Contigs
+ctig_len = strint(df, "Contigs", "total_bps")
+ctig_count = strint(df, "Contigs", "sequence_count")
+ctig_n50 = strint(df, "Contigs", "N50")
+ctig_max = strint(df, "Contigs", "longest")
+
+#---- Scaffolds
+sfld_len = strint(df, "Scaffolds", "total_bps")
+sfld_count = strint(df, "Scaffolds", "sequence_count")
+sfld_n50 = strint(df, "Scaffolds", "N50")
+sfld_max = strint(df, "Scaffolds", "longest")
+```
+
+::: {.callout-tip appearance="simple"}
+### Python query syntax made easier
+
+```{python}
+#| eval: false
+#| code-fold: false
+#| echo: true
+#| code-summary: An example of the syntax used to query the multi-indexed dataframe. This code is not evaluated, but for illustrative purposes.
+
+# strint(dataframe, category, label)
+ctig_len = strint(df, "Contigs", "N50")
+
+# --->> 
+
+# Which then finds the desired value or 'Value'
+stat = dataframe.loc[(category, label), "Value"]
+```
+:::
+
+## Present
+
+### The Pandas Table
+
+This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, dataframe object, use the `forma_df.data` syntax.
+
+::: d-flex
+[[:The original dataframe output:](#NutFrame)]{}
+:::
+
+::: column-page-outset
+```{r}
+#| label: src_style_df.py
+#| code-summary: Source the `formaFrame.py` script.
+
+reticulate::source_python("03_Present/scripts/formaFrame.py")
+```
+
+::: {#forma}
+```{python}
+#| label: run_formaFrame.py
+#| code-summary: Call `formaFrame()`, passing in 2 distinct color dictionaries corresponding to index level.
+
+#---- Count Colors
+# Create color palettes for first level index and second level index + columns.
+n_colors1 = len(df.index.levels[0])
+n_colors2 = len(df.index.levels[1]) + len(df.columns)
+
+#---- Palettes
+# Adjust color palettes easily
+palette1 = sns.color_palette("Pastel2", n_colors = n_colors1)
+palette2 = sns.color_palette("husl", n_colors = n_colors2)
+
+#---- Palette-Index Dictionaries
+# Map index levels and column names to colors with dictionaries
+color_dict1 = dict(zip(df.index.levels[0], palette1))
+# For index level 2 and value columns, using a different palette
+color_dict2 = dict(zip(list(
+    df.index.levels[1]) + list(df.columns), palette2))
+
+#---- Call Function
+forma_df = formaFrame(df, color_dict1, color_dict2)
+
+#---- Hide Headers
+# The columns headers look a bit odd for display purposes
+forma_df = forma_df.hide(axis = "index", names = True)
+forma_df = forma_df.hide(axis = "columns", level = 0)
+
+#---- Display 
+forma_df
+```
+:::
+:::
+
+### DNA Zoo's Table, Reproduced
+
+```{r}
+#| label: load_reticulate
+#| code-summary: To make the variable calls simpler in the table below.
+
+library(reticulate)
+```
+
+Importing the library makes the code a little bit cleaner for inserting the values into the table below. For example, I would have had to type `{r} reticulate::py$ctig_n50`, but now I can just type `{r} py$ctig_n50` into the individual cells. I needed to convert the values into r objects, as the knitr engine used in rendering this document does not seem display output from execution of inline Python code directly.
+
+|                          |                         |                       |                           |
+|------------------|------------------|------------------|-------------------|
+| **Contig length (bp)**   | **Number of contigs**   | **Contig N50 (bp)**   | **Longest contig (bp)**   |
+| `{r} py$ctig_len`        | `{r} py$ctig_count`     | `{r} py$ctig_n50`     | `{r} py$ctig_max`         |
+| **Scaffold length (bp)** | **Number of scaffolds** | **Scaffold N50 (bp)** | **Longest scaffold (bp)** |
+| `{r} py$sfld_len`        | `{r} py$sfld_count`     | `{r} py$sfld_n50`     | `{r} py$ sfld_max`        |
+
+## :x NutFrame {.unnumbered .unlisted}
+
+```{python}
+#| label: nutshFrame
+#| code-summary: The dataframe object on display, in all its glory.
+# A simple call on the Styler object
+forma_df.data
+```
