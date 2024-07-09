@@ -21,8 +21,8 @@ date-format: "MMM D, YYYY"
 
 bibliography: references.bib
 
-repo: https://github.com/ericMossotti/genomics
-source: genomics.qmd
+repo: https://github.com/ericMossotti/Cicada_Data
+source: index.qmd
 
 abstract-title: "Objective"
 abstract: |
@@ -42,6 +42,7 @@ citeproc: true
 toc-expand: true
 toc: true
 number-sections: true
+toc-float: true
 
 link-external-newwindow: true
 smooth-scroll: true
@@ -63,7 +64,7 @@ The steps involved in reproducing data can be unclear.
 
 ### Purpose {.unnumbered}
 
-To elaborate on the objective stated at the top of this document, the purpose is to supplement the DNA Zoo's report with a more easily accessible data analysis (DA) pipeline. To accomplish this, I seek to independently reproduce and supplement their article's table while supplying all data processing steps with documented code embedded in the report itself. Although there's nothing wrong with the data or article, it could be taken further. [@dnazoo], [@magicica]
+To elaborate on the objective stated at the top of this document, the purpose is to supplement DNA Zoo's report with an accessible data analysis (DA) pipeline. To accomplish this, I seek to independently reproduce their article's table while documenting all data processing steps as code executed with output exactly as seen in the report itself. Although there's nothing wrong with the original works, things can always be taken further. [@dnazoo], [@magicica]
 
 ### Stakeholders {.unnumbered}
 
@@ -224,7 +225,7 @@ fasta = "01_Transform/data/magicicada.fasta"
 decompress(gzFasta, fasta)
 ```
 
-This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely to the div. Not sure how else to go about accomplishing this within my current Quarto project setup. [@trizna2020]
+This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely back to the div. Not sure how else to go about accomplishing this within my current Quarto project setup. [@trizna2020]
 
 ``` bash
 # BASH SCRIPT
@@ -238,7 +239,7 @@ summary_stats=01_Transform/data/summary_stats.txt
 assembly_stats $fasta > $summary_stats
 ```
 
-Transform the text file into a Python dataframe. I am opting to not to blanket change data-types as output format could vary by user preference.
+Transform the text file into a Python dataframe. I am opting not to blanket change data-types as output format could vary by user preference. 
 
 ```{r}
 #| label: src_assemblyFramer.py
@@ -307,12 +308,41 @@ sfld_max = strint(df, "Scaffolds", "longest")
 #| eval: false
 #| code-fold: false
 #| echo: true
-#| code-summary: An example of the syntax used to query the multi-indexed dataframe. This code is not evaluated, but for illustrative purposes.
+#| code-summary: An example of the syntax used to query the multi-indexed dataframe. This code is not evaluated, but only for illustrative purposes.
 
-# strint(dataframe, category, label)
+"""
+strint(dataframe, category, label)
+
+category options
+----------------
+Contigs
+Scaffolds
+
+
+label options
+----------------
+L10
+L20
+L30
+L40
+L50
+N10
+N20
+N30
+N40
+N50
+gc_content
+longest
+mean
+median
+sequence_count
+shortest
+total_bps
+"""
+
 ctig_len = strint(df, "Contigs", "N50")
 
-# --->> 
+# -->> Looking inside the strint(dataframe, category, label) function ---->>
 
 # Which then finds the desired value or 'Value'
 stat = dataframe.loc[(category, label), "Value"]
@@ -325,11 +355,8 @@ stat = dataframe.loc[(category, label), "Value"]
 
 This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, dataframe object, use the `forma_df.data` syntax.
 
-::: d-flex
 [:The original dataframe output:](#NutFrame)
-:::
 
-::: column-page-outset
 ```{r}
 #| label: src_style_df.py
 #| code-summary: Source the `formaFrame.py` script.
@@ -337,41 +364,13 @@ This is a slightly formatted view of the Pandas table designed to be more easily
 reticulate::source_python("03_Present/scripts/formaFrame.py")
 ```
 
-::: {#forma}
+
 ```{python}
-#| label: run_formaFrame.py
-#| code-summary: Call `formaFrame()`, passing in 2 distinct color dictionaries corresponding to index level.
-
-#---- Count Colors
-# Create color palettes for first level index and second level index + columns.
-n_colors1 = len(df.index.levels[0])
-n_colors2 = len(df.index.levels[1]) + len(df.columns)
-
-#---- Palettes
-# Adjust color palettes easily
-palette1 = sns.color_palette("Pastel2", n_colors = n_colors1)
-palette2 = sns.color_palette("husl", n_colors = n_colors2)
-
-#---- Palette-Index Dictionaries
-# Map index levels and column names to colors with dictionaries
-color_dict1 = dict(zip(df.index.levels[0], palette1))
-# For index level 2 and value columns, using a different palette
-color_dict2 = dict(zip(list(
-    df.index.levels[1]) + list(df.columns), palette2))
-
-#---- Call Function
-forma_df = formaFrame(df, color_dict1, color_dict2)
-
-#---- Hide Headers
-# The columns headers look a bit odd for display purposes
-forma_df = forma_df.hide(axis = "index", names = True)
-forma_df = forma_df.hide(axis = "columns", level = 0)
 
 #---- Display 
+forma_df = df.loc[:].style.pipe(formaFrame)
 forma_df
 ```
-:::
-:::
 
 ### DNA Zoo's Table, Reproduced
 
@@ -382,10 +381,10 @@ forma_df
 library(reticulate)
 ```
 
-Importing the library makes the code a little bit cleaner for inserting the values into the table below. For example, I would have had to type `{r} reticulate::py$ctig_n50`, but now I can just type `{r} py$ctig_n50` into the individual cells. I needed to convert the values into r objects, as the knitr engine used in rendering this document does not seem display output from execution of inline Python code directly.
+Importing the library makes it simpler for inserting the values into the table below. For example, I would have had to type `{r} reticulate::py$ctig_n50`, but now I can just type `{r} py$ctig_n50` into the individual cells. I needed to convert the Python into R objects, as the knitr engine used in rendering this document does not seem to display output from execution of inline Python code directly.
 
 |                          |                         |                       |                           |
-|--------------------------|-------------------------|-----------------------|---------------------------|
+|------------------|------------------|------------------|-------------------|
 | **Contig length (bp)**   | **Number of contigs**   | **Contig N50 (bp)**   | **Longest contig (bp)**   |
 | `{r} py$ctig_len`        | `{r} py$ctig_count`     | `{r} py$ctig_n50`     | `{r} py$ctig_max`         |
 | **Scaffold length (bp)** | **Number of scaffolds** | **Scaffold N50 (bp)** | **Longest scaffold (bp)** |
@@ -396,6 +395,7 @@ Importing the library makes the code a little bit cleaner for inserting the valu
 ```{python}
 #| label: nutshFrame
 #| code-summary: The dataframe object on display, in all its glory.
-# A simple call on the Styler object
+
+# The un-styled dataframe output
 forma_df.data
 ```
