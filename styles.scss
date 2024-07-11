@@ -32,25 +32,20 @@ $link-hover: #FF9800;
   vertical-align: middle;
 }
 
-/*
-#mermaid-1 .cluster rect {
-  fill: #4CAF50 !important;
-}
-
-#mermaid-1 .node rect {
-  fill: Red !important;
+#quarto-embed-header {
+   // This targets all classes within #quarto-title-banner
+  & > * {
+    // Properties for all direct child elements
+    color: white; // Example property
+    background-color: transparent !important;
+  }
   
-}
+  background-color: transparent !important;
 
-#mermaid-1 .edgeLabel rect {
-  fill: Yellow !important;
 }
-*/
 
 
 /*-- scss:classes --*/
-
-
 
 // Colors only the dataframe output inside the nutshell bubble //
 .nutshell-bubble pre code {
@@ -61,6 +56,14 @@ $link-hover: #FF9800;
   color: #EEE8AA !important;
 }
 
+.quarto-title-banner {
+  $cicada-green: #4A5D23;
+  $cicada-taupe: #8B7E66;
+  $cicada-amber: #E09F3E;
+  
+  background: linear-gradient(
+  to bottom right, $cicada-green, $cicada-taupe, $cicada-amber) !important;
+}
 
 /*-- scss:selectors --*/
 
