@@ -1,7 +1,7 @@
 ---
 title: "Cicada Data"
 subtitle: "Data analysis reproduction concerning the cicada's genome."
-
+    
 author: 
     - name: "Eric Mossotti"
       corresponding: true
@@ -54,6 +54,19 @@ code-overflow: wrap
 
 filters:
      - nutshell
+
+# For favicon support on most platforms
+  # Generated the image at https://svg.io/
+  # Converted to favicon package at https://realfavicongenerator.net/
+include-in-header:
+  text: |
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
 ---
 
 ## Introduction {.unnumbered}
@@ -74,7 +87,7 @@ This might be of interest to the original authors of the article. More generally
 
 All data used within this report was freely available from a public database hosted by DNA Zoo. [@dnazoo.s]
 
-## Pipeline {.unnumbered}
+## Pipeline {.unnumbered .column-screen-right}
 
 ```{mermaid}
 %%| code-fold: true
@@ -82,36 +95,58 @@ All data used within this report was freely available from a public database hos
 
 flowchart TB
     A((1)):::circle --> B((2)):::circle
-    B --> C((3)):::circle
-    C --> D((4)):::circle
+    B --> C((2a)):::circle
+    B --> D((2b)):::circle
+    C --> E((3a)):::circle
+    D --> F((3b)):::circle
+    E --> G((4)):::circle
+    F --> G
     
     subgraph Extract ["1. Extract"]
-        direction LR
-        A1["Create local\nanalysis directory"] --> A2["Download from web\nto local directory"]
+        direction TB
+        A1["directorize.py"] --> A2["importer.py"]
     end
     subgraph Transform ["2. Transform"]
-        direction LR
-        B1["Decompress\nfasta.gz file"] --> B2["Output text file\nusing bash script"]
-        B2 --> B3["Transform text to\nindexed dataframe"]
+      direction TB
+      B1["decompress.py"]
     end
-    subgraph Load ["3. Load"]
+    subgraph Transform_a ["2a. Transform_a"]
         direction LR
-        C1["Format table values\nwith thousands-separator"]
+        C1["Bash, assembly_stats"]
+        C1 --> C2["assemblyFramer.py"]
+    end
+    subgraph Transform_b ["2b. Transform_b"]
+        direction LR
+        D1["decompress.py"] --> D2["assemblyDictionary.py"]
+    end
+    subgraph Load_a ["3a. Load_a"]
+        direction TB
+        E1["strint.py"]
+    end
+    subgraph Load_b ["3b. Load_b"]
+        direction TB
+        F1["Assign to variables"]
     end
     subgraph Present ["4. Present"]
-        direction LR
-        D1["Create a Styler object\nfrom the dataframe"] --> D2["Dataframe is accessible\nfrom the Styler object"]
-        D2 --> D3["Reproduce DNA Zoo table\nusing Python to R conversion"]
+        direction TB
+        G1["Reproduce DNA Zoo table\nusing Python to R conversion"]
     end
 	
     A ~~~ Extract
-    B ~~~ Transform
-    C ~~~ Load
-    D ~~~ Present
+    B ~~~ Transform_a
+    C ~~~ Transform_b
+    D ~~~ Load_a
+    E ~~~ Load_b
+    F ~~~ Present
 	
     Extract -.->|fasta.gz| Transform
-    Transform -.->|pd.DataFrame| Load
-    Load -.->|string variables| Present
+    Transform -.->|.fasta| Transform_a
+    Transform -.->|.fasta| Transform_b
+    Transform_a -.->|pd.DataFrame| Load_a
+    Transform_b -.->|Stats Dictionary| Load_b
+    Load_a -.->|Strings| G1
+    Load_b -.->|Strings| G1
+    
 
 ```
 
@@ -197,6 +232,7 @@ The data transformation phase of the pipeline.
 
 ### Decompress .GZ
 
+
 ```{r}
 #| label: src_decompress.py
 #| code-summary: Source the `decompress.py` script.
@@ -204,12 +240,16 @@ The data transformation phase of the pipeline.
 reticulate::source_python("01_Transform/scripts/decompress.py")
 ```
 
+
+
 ```{python}
 #| label: code_decompress.py
 #| code-summary: This transforms the compressed file to its decompressed form.
 #| file: "01_Transform/scripts/decompress.py"
 #| eval: false 
 ```
+
+
 
 ```{python}
 #| label: run_decompress.py
@@ -224,6 +264,22 @@ fasta = "01_Transform/data/magicicada.fasta"
 # Pass file paths to the function
 decompress(gzFasta, fasta)
 ```
+
+
+
+### Fasta to Text, to DataFrame
+
+
+
+```{r}
+#| label: src_formaFrame_df.py
+#| code-summary: Source the `formaFrame.py` script.
+
+reticulate::source_python("03_Present/scripts/formaFrame.py")
+
+```
+
+
 
 This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely back to the div. Not sure how else to go about accomplishing this within my current Quarto project setup. [@trizna2020]
 
@@ -249,12 +305,14 @@ Transform the text file into a Python dataframe. I am opting not to blanket chan
 reticulate::source_python("01_Transform/scripts/assemblyFramer.py")
 ```
 
+:::scroll-code
 ```{python}
 #| label: assemblyFramer_code_view
 #| code-summary: This code transforms text file data into a mult-indexed dataframe. Multi-indexing simplifies query syntax later on.
 #| file: "01_Transform/scripts/assemblyFramer.py"
 #| eval: false 
 ```
+:::
 
 ```{python}
 #| label: run_assemblyFramer
@@ -266,27 +324,59 @@ statsPath = "01_Transform/data/summary_stats.txt"
 df = assemblyFramer(statsPath)
 ```
 
-## Load
+### Fasta to Dictionary
 
-This is the data loading phase. Following completion of this stage, querying the data should be more intuitive than before.
+```{r}
+#| label: src_assemblyDictionary.py
+#| code-summary: Source the external `assemblyDictionary.py` script.
+
+reticulate::source_python("01_Transform/scripts/assemblyDictionary.py")
+```
+
+:::scroll-code
+```{python}
+#| label: code_assemblyDictionary.py
+#| code-summary: This returns a stats dictionary.
+#| file: "01_Transform/scripts/assemblyDictionary.py"
+#| eval: false 
+```
+:::
 
 ```{r}
 #| label: src_strint.py
 #| code-summary: Source the `strint.py` script.
 
 reticulate::source_python("02_Load/scripts/strint.py")
+
 ```
 
+
+```{python}
+#| label: run_assemblyDictionary.py
+#| code-summary: Instead of a text file, this skips several time-consuming steps. 
+#| eval: false
+
+statsDict = assemblyDictionary("01_Transform/data/magicicada.fasta")
+
+```
+
+## Load
+
+This is the data loading phase. Following completion of this stage, querying the data should be more intuitive than before.
+
+:::scroll-code
 ```{python}
 #| label: code_strint.py
 #| code-summary: This code transforms the strings in the value column of the dataframe to a more visually appealing, thousands-separated form.
 #| file: "02_Load/scripts/strint.py"
 #| eval: false 
 ```
+:::
 
 ```{python}
 #| label: run_strint.py
 #| code-summary: Calls `strint()`, with the simpflified query syntax noted earlier. One can simply specify the literal 'Category' and 'Label' keys to return the desired value.
+#| eval: true
 
 #---- Contigs
 ctig_len = strint(df, "Contigs", "total_bps")
@@ -301,43 +391,68 @@ sfld_n50 = strint(df, "Scaffolds", "N50")
 sfld_max = strint(df, "Scaffolds", "longest")
 ```
 
-::: {.callout-tip appearance="simple"}
-### Python query syntax made easier
 
 ```{python}
+#| label: assign_strings
+#| code-summary: Assigns the dictionary value as string objects.
 #| eval: false
-#| code-fold: false
+
+#---- Contigs
+ctig_len = strint(statsDict, "Contig Stats", "total_bps")
+ctig_count = strint(statsDict, "Contig Stats", "sequence_count")
+ctig_n50 = strint(statsDict, "Contig Stats", "N50")
+ctig_max = strint(statsDict, "Contig Stats", "longest")
+
+#---- Scaffolds
+sfld_len = strint(statsDict, "Scaffold Stats", "total_bps")
+sfld_count = strint(statsDict, "Scaffold Stats", "sequence_count")
+sfld_n50 = strint(statsDict, "Scaffold Stats", "N50")
+sfld_max = strint(statsDict, "Scaffold Stats", "longest")
+
+
+```
+
+
+::: {.callout-tip appearance="simple"}
+### Multi-index dataframe query syntax
+
+:::scroll-code
+```{python}
+#| eval: false
+#| code-fold: show
 #| echo: true
 #| code-summary: An example of the syntax used to query the multi-indexed dataframe. This code is not evaluated, but only for illustrative purposes.
 
 """
+
 strint(dataframe, category, label)
 
 category options
 ----------------
-Contigs
-Scaffolds
+  Contigs
+  Scaffolds
 
 
 label options
 ----------------
-L10
-L20
-L30
-L40
-L50
-N10
-N20
-N30
-N40
-N50
-gc_content
-longest
-mean
-median
-sequence_count
-shortest
-total_bps
+  L10
+  L20
+  L30
+  L40
+  L50
+  N10
+  N20
+  N30
+  N40
+  N50
+  gc_content
+  longest
+  mean
+  median
+  sequence_count
+  shortest
+  total_bps
+  
 """
 
 ctig_len = strint(df, "Contigs", "N50")
@@ -346,29 +461,77 @@ ctig_len = strint(df, "Contigs", "N50")
 
 # Which then finds the desired value or 'Value'
 stat = dataframe.loc[(category, label), "Value"]
+
 ```
+:::
+:::
+
+
+::: {.callout-tip appearance="simple"}
+### Dictionary query syntax
+
+:::scroll-code
+```{python}
+#| eval: false
+#| code-fold: show
+#| echo: true
+#| code-summary: An example of the syntax used to query the dictionary This code is not evaluated, but only for illustrative purposes.
+
+"""
+
+strint(dataframe, category, label)
+
+category options
+----------------
+  Contig Stats
+  Scaffold Stats
+
+
+label options
+----------------
+  L10
+  L20
+  L30
+  L40
+  L50
+  N10
+  N20
+  N30
+  N40
+  N50
+  gc_content
+  longest
+  mean
+  median
+  sequence_count
+  shortest
+  total_bps
+  
+"""
+
+# A look inside assemblyDictionary.py where stat_output is returned
+stat_output = {'Contig Stats': contig_stats,
+               'Scaffold Stats': scaffold_stats}
+
+ctig_len = statsDict["Contig Stats"]["total_bps"]
+```
+:::
 :::
 
 ## Present
 
 ### The Pandas Table
 
-This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, dataframe object, use the `forma_df.data` syntax.
+
+This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, dataframe object, use the ``forma_df.data`` syntax.
 
 [:The original dataframe output:](#NutFrame)
-
-```{r}
-#| label: src_style_df.py
-#| code-summary: Source the `formaFrame.py` script.
-
-reticulate::source_python("03_Present/scripts/formaFrame.py")
-```
-
 
 ```{python}
 
 #---- Display 
 forma_df = df.loc[:].style.pipe(formaFrame)
+
 forma_df
 ```
 
@@ -381,7 +544,7 @@ forma_df
 library(reticulate)
 ```
 
-Importing the library makes it simpler for inserting the values into the table below. For example, I would have had to type `{r} reticulate::py$ctig_n50`, but now I can just type `{r} py$ctig_n50` into the individual cells. I needed to convert the Python into R objects, as the knitr engine used in rendering this document does not seem to display output from execution of inline Python code directly.
+Importing the library makes it simpler for inserting the values into the table below. For example, I would have had to type ``{r} reticulate::py$ctig_n50``, but now, I only need to type ``{r} py$ctig_n50`` into the individual cells. I needed to convert the Python into R objects, as the knitr engine used in rendering this document does not seem to display output from execution of inline Python code directly.
 
 |                          |                         |                       |                           |
 |------------------|------------------|------------------|-------------------|
@@ -399,3 +562,4 @@ Importing the library makes it simpler for inserting the values into the table b
 # The un-styled dataframe output
 forma_df.data
 ```
+
