@@ -49,7 +49,7 @@ smooth-scroll: true
 fig-responsive: true
 echo: true
 callout-appearance: simple
-code-fold: show
+code-fold: true
 code-overflow: wrap
 
 filters:
@@ -73,15 +73,15 @@ include-in-header:
 
 ### Problem {.unnumbered}
 
-The steps involved in reproducing data can be unclear.
+The steps involved in reproducing data can be unclear. 
 
 ### Purpose {.unnumbered}
 
-To elaborate on the objective stated at the top of this document, the purpose is to supplement DNA Zoo's report with an accessible data analysis (DA) pipeline. To accomplish this, I seek to independently reproduce their article's table while documenting all data processing steps as code executed with output exactly as seen in the report itself. Although there's nothing wrong with the original works, things can always be taken further. [@dnazoo], [@magicica]
+To elaborate on the objective stated at the top of this document, I seek to supplement DNA Zoo's report with an accessible data analysis (DA) pipeline. To accomplish this, I independently reproduce the original article's table while documenting every data processing step. Although there's nothing wrong with the original works, things can always be taken further. [@dnazoo], [@magicica]
 
 ### Stakeholders {.unnumbered}
 
-This might be of interest to the original authors of the article. More generally, the spirit of this work could transfer to other domains of data intensive research and analytics.
+This might be of interest to the original authors of the article. More generally, the spirit of this work could transfer to other domains of data intensive research and analytics. 
 
 ### Source {.unnumbered}
 
@@ -95,57 +95,37 @@ All data used within this report was freely available from a public database hos
 
 flowchart TB
     A((1)):::circle --> B((2)):::circle
-    B --> C((2a)):::circle
-    B --> D((2b)):::circle
-    C --> E((3a)):::circle
-    D --> F((3b)):::circle
-    E --> G((4)):::circle
-    F --> G
-    
+    B --> C((3)):::circle
+    C --> D((4)):::circle
+
     subgraph Extract ["1. Extract"]
-        direction TB
+        direction LR
         A1["directorize.py"] --> A2["importer.py"]
     end
     subgraph Transform ["2. Transform"]
       direction TB
-      B1["decompress.py"]
+      B1{"decompress.py"} -.->|.fasta| B2["assembly_stats"] -.->|summary_stats.txt| B3["assemblyFramer.py"]
+      B1 -.->|.fasta| B4["assemblyDictionary.py"]
     end
-    subgraph Transform_a ["2a. Transform_a"]
-        direction LR
-        C1["Bash, assembly_stats"]
-        C1 --> C2["assemblyFramer.py"]
-    end
-    subgraph Transform_b ["2b. Transform_b"]
-        direction LR
-        D1["decompress.py"] --> D2["assemblyDictionary.py"]
-    end
-    subgraph Load_a ["3a. Load_a"]
+    subgraph Load ["3. Load"]
         direction TB
-        E1["strint.py"]
-    end
-    subgraph Load_b ["3b. Load_b"]
-        direction TB
-        F1["Assign to variables"]
+        C1{"strint.py"}
     end
     subgraph Present ["4. Present"]
         direction TB
-        G1["Reproduce DNA Zoo table\nusing Python to R conversion"]
+        D1["DNA Zoo's Table, Reproduced"]
     end
 	
     A ~~~ Extract
-    B ~~~ Transform_a
-    C ~~~ Transform_b
-    D ~~~ Load_a
-    E ~~~ Load_b
-    F ~~~ Present
+    B ~~~ Transform
+    C ~~~ Load
+    D ~~~ Present
 	
-    Extract -.->|fasta.gz| Transform
-    Transform -.->|.fasta| Transform_a
-    Transform -.->|.fasta| Transform_b
-    Transform_a -.->|pd.DataFrame| Load_a
-    Transform_b -.->|Stats Dictionary| Load_b
-    Load_a -.->|Strings| G1
-    Load_b -.->|Strings| G1
+    A2 -.->|fasta.gz| B1
+    B3 -.->|dataframe| C1
+    B4 -.->|dict| C1
+    C1 -.->|strings| Present
+    C1 -.->|strings| Present
     
 
 ```
@@ -232,7 +212,6 @@ The data transformation phase of the pipeline.
 
 ### Decompress .GZ
 
-
 ```{r}
 #| label: src_decompress.py
 #| code-summary: Source the `decompress.py` script.
@@ -240,16 +219,12 @@ The data transformation phase of the pipeline.
 reticulate::source_python("01_Transform/scripts/decompress.py")
 ```
 
-
-
 ```{python}
 #| label: code_decompress.py
 #| code-summary: This transforms the compressed file to its decompressed form.
 #| file: "01_Transform/scripts/decompress.py"
 #| eval: false 
 ```
-
-
 
 ```{python}
 #| label: run_decompress.py
@@ -265,11 +240,7 @@ fasta = "01_Transform/data/magicicada.fasta"
 decompress(gzFasta, fasta)
 ```
 
-
-
 ### Fasta to Text, to DataFrame
-
-
 
 ```{r}
 #| label: src_formaFrame_df.py
@@ -278,8 +249,6 @@ decompress(gzFasta, fasta)
 reticulate::source_python("03_Present/scripts/formaFrame.py")
 
 ```
-
-
 
 This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely back to the div. Not sure how else to go about accomplishing this within my current Quarto project setup. [@trizna2020]
 
@@ -295,7 +264,7 @@ summary_stats=01_Transform/data/summary_stats.txt
 assembly_stats $fasta > $summary_stats
 ```
 
-Transform the text file into a Python dataframe. I am opting not to blanket change data-types as output format could vary by user preference. 
+Transform the text file into a Python dataframe. I am opting not to blanket change data-types as output format could vary by user preference.
 
 ```{r}
 #| label: src_assemblyFramer.py
@@ -305,7 +274,7 @@ Transform the text file into a Python dataframe. I am opting not to blanket chan
 reticulate::source_python("01_Transform/scripts/assemblyFramer.py")
 ```
 
-:::scroll-code
+::: scroll-code
 ```{python}
 #| label: assemblyFramer_code_view
 #| code-summary: This code transforms text file data into a mult-indexed dataframe. Multi-indexing simplifies query syntax later on.
@@ -333,7 +302,7 @@ df = assemblyFramer(statsPath)
 reticulate::source_python("01_Transform/scripts/assemblyDictionary.py")
 ```
 
-:::scroll-code
+::: scroll-code
 ```{python}
 #| label: code_assemblyDictionary.py
 #| code-summary: This returns a stats dictionary.
@@ -350,7 +319,6 @@ reticulate::source_python("02_Load/scripts/strint.py")
 
 ```
 
-
 ```{python}
 #| label: run_assemblyDictionary.py
 #| code-summary: Instead of a text file, this skips several time-consuming steps. 
@@ -364,7 +332,9 @@ statsDict = assemblyDictionary("01_Transform/data/magicicada.fasta")
 
 This is the data loading phase. Following completion of this stage, querying the data should be more intuitive than before.
 
-:::scroll-code
+### Assign Variables with ``strint.py``
+
+::: scroll-code
 ```{python}
 #| label: code_strint.py
 #| code-summary: This code transforms the strings in the value column of the dataframe to a more visually appealing, thousands-separated form.
@@ -372,6 +342,9 @@ This is the data loading phase. Following completion of this stage, querying the
 #| eval: false 
 ```
 :::
+
+
+### DataFrame Input
 
 ```{python}
 #| label: run_strint.py
@@ -392,31 +365,10 @@ sfld_max = strint(df, "Scaffolds", "longest")
 ```
 
 
-```{python}
-#| label: assign_strings
-#| code-summary: Assigns the dictionary value as string objects.
-#| eval: false
-
-#---- Contigs
-ctig_len = strint(statsDict, "Contig Stats", "total_bps")
-ctig_count = strint(statsDict, "Contig Stats", "sequence_count")
-ctig_n50 = strint(statsDict, "Contig Stats", "N50")
-ctig_max = strint(statsDict, "Contig Stats", "longest")
-
-#---- Scaffolds
-sfld_len = strint(statsDict, "Scaffold Stats", "total_bps")
-sfld_count = strint(statsDict, "Scaffold Stats", "sequence_count")
-sfld_n50 = strint(statsDict, "Scaffold Stats", "N50")
-sfld_max = strint(statsDict, "Scaffold Stats", "longest")
-
-
-```
-
-
 ::: {.callout-tip appearance="simple"}
-### Multi-index dataframe query syntax
+#### Multi-index dataframe query syntax
 
-:::scroll-code
+::: scroll-code
 ```{python}
 #| eval: false
 #| code-fold: show
@@ -467,10 +419,32 @@ stat = dataframe.loc[(category, label), "Value"]
 :::
 
 
-::: {.callout-tip appearance="simple"}
-### Dictionary query syntax
+### Dictionary Input
 
-:::scroll-code
+```{python}
+#| label: assign_strings
+#| code-summary: Assigns the dictionary value as string objects.
+#| eval: false
+
+#---- Contigs
+ctig_len = strint(statsDict, "Contig Stats", "total_bps")
+ctig_count = strint(statsDict, "Contig Stats", "sequence_count")
+ctig_n50 = strint(statsDict, "Contig Stats", "N50")
+ctig_max = strint(statsDict, "Contig Stats", "longest")
+
+#---- Scaffolds
+sfld_len = strint(statsDict, "Scaffold Stats", "total_bps")
+sfld_count = strint(statsDict, "Scaffold Stats", "sequence_count")
+sfld_n50 = strint(statsDict, "Scaffold Stats", "N50")
+sfld_max = strint(statsDict, "Scaffold Stats", "longest")
+
+```
+
+
+::: {.callout-tip appearance="simple"}
+#### Dictionary query syntax
+
+::: scroll-code
 ```{python}
 #| eval: false
 #| code-fold: show
@@ -522,14 +496,13 @@ ctig_len = statsDict["Contig Stats"]["total_bps"]
 
 ### The Pandas Table
 
-
-This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, dataframe object, use the ``forma_df.data`` syntax.
+This is a slightly formatted view of the Pandas table designed to be more easily queried to return the desired statistic. If, however, you'd like to treat the Styler object as the unchanged, dataframe object, use the `forma_df.data` syntax.
 
 [:The original dataframe output:](#NutFrame)
 
 ```{python}
 
-#---- Display 
+# Display with Style 
 forma_df = df.loc[:].style.pipe(formaFrame)
 
 forma_df
@@ -544,7 +517,7 @@ forma_df
 library(reticulate)
 ```
 
-Importing the library makes it simpler for inserting the values into the table below. For example, I would have had to type ``{r} reticulate::py$ctig_n50``, but now, I only need to type ``{r} py$ctig_n50`` into the individual cells. I needed to convert the Python into R objects, as the knitr engine used in rendering this document does not seem to display output from execution of inline Python code directly.
+Importing the library makes it simpler for inserting the values into the table below. For example, I would have had to type `{r} reticulate::py$ctig_n50`, but now, I only need to type `{r} py$ctig_n50` into the individual cells. I needed to convert the Python into R objects, as the knitr engine used in rendering this document does not seem to display output from execution of inline Python code directly.
 
 |                          |                         |                       |                           |
 |------------------|------------------|------------------|-------------------|
@@ -552,6 +525,72 @@ Importing the library makes it simpler for inserting the values into the table b
 | `{r} py$ctig_len`        | `{r} py$ctig_count`     | `{r} py$ctig_n50`     | `{r} py$ctig_max`         |
 | **Scaffold length (bp)** | **Number of scaffolds** | **Scaffold N50 (bp)** | **Longest scaffold (bp)** |
 | `{r} py$sfld_len`        | `{r} py$sfld_count`     | `{r} py$sfld_n50`     | `{r} py$ sfld_max`        |
+
+### Biostrings
+
+```{r}
+#| label: bioStrings
+#| code-summary: Outputs visualization of file contents with the ``Biostrings::readDNAStringSet()`` package.
+#| eval: false
+
+
+library(crayon)
+library(Biostrings)
+
+
+r_file_path <- "01_Transform/data/magicicada.fasta"
+
+
+print_dna <- function(x) {
+  cat(silver("DNAStringSet object of length"), silver(length(x)), silver(":\n"))
+  cat(silver("        width seq                                          names\n"))
+  for (i in seq_along(x)) {
+    seq <- as.character(x[[i]])
+    colored_seq <- gsub("A", red("A"), seq)
+    colored_seq <- gsub("C", green("C"), colored_seq)
+    colored_seq <- gsub("G", yellow("G"), colored_seq)
+    colored_seq <- gsub("T", blue("T"), colored_seq)
+    cat(sprintf("[%d] %11d %s ... %s %s\n",
+                i, width(x[i]), 
+                substr(colored_seq, 1, 20),
+                substr(colored_seq, nchar(seq) - 19, nchar(seq)),
+                names(x)[i]))
+  }
+}
+
+# ---- Exploratory data analysis functions with R
+# ---- viewDNA 
+# 
+# Returns sequences
+viewSeq <- function (r_filePath,
+                     set = NULL,
+                     seqFormat = "fasta",
+                     isDNA = TRUE) {
+    
+    if (exists("codeSeq") == FALSE) { # Determine if object is in memory
+        if (isTRUE(isDNA)) {
+            # For DNA, hence "DNA"...StringSet
+            codeSeq <- Biostrings::readDNAStringSet(filepath = r_file_path, format = seqFormat)
+            
+        } else { # For other sequence data types, hence "B"...StringSet
+            codeSeq <- Biostrings::readBStringSet(filepath = r_file_path, format = seqFormat)
+        }
+    }
+    
+    if (!is.null(set)) { # Return subset or full sequence
+        result <- codeSeq[set]
+    } else {
+        result <- codeSeq
+    }
+
+  print_dna(result)
+
+  invisible(result)
+
+}
+
+viewSeq()
+```
 
 ## :x NutFrame {.unnumbered .unlisted}
 
@@ -563,3 +602,15 @@ Importing the library makes it simpler for inserting the values into the table b
 forma_df.data
 ```
 
+```{python}
+#| eval: false
+
+fasta_file = "01_Transform/data/magicicada.fasta"
+
+# Reading a FASTA file
+with open(fasta_file, 'r') as fasta_file:
+    for seq_record in SeqIO.parse(fasta_file, 'fasta'):
+        print('ID:', seq_record.id)
+        print('Sequence:', str(seq_record.seq))
+        print('Length:', len(seq_record))
+```
