@@ -10,6 +10,7 @@ attrs==23.2.0
 Babel==2.15.0
 beautifulsoup4==4.12.3
 bleach==6.1.0
+bs4==0.0.2
 certifi==2024.6.2
 cffi==1.16.0
 charset-normalizer==3.3.2
