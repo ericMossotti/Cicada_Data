@@ -1,10 +1,10 @@
 project:
   title: "cicada_data"
   type: manuscript
-
+  
 execute: 
   cache: false
-  freeze: true
+  freeze: false
 
 format:
     html:
