@@ -1,23 +1,20 @@
 ---
 title: "Cicada Data"
 subtitle: "Data analysis reproduction concerning the cicada's genome."
-    
+
 author: 
     - name: "Eric Mossotti"
       corresponding: true
       email: ecmossotti@gmail.com
       roles:
         - Data analysis
-        - Project management
 
 keywords: 
     - Genome Assembly
-    - Quantitative Analysis
     - ETL Pipeline
-    - Reproducibility
-    - Open Science
     - Python
     - R
+    - Bash
 
 date: 07/15/2024
 date-modified: last-modified
@@ -71,6 +68,7 @@ include-in-header:
     <link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#5bbad5">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
+    
 ---
 
 ## Introduction {.unnumbered}
@@ -139,30 +137,37 @@ This would be the data extraction phase of the DA pipeline.
 
 ### Create Project Directory
 
-```{r}
-#| label: src_directorize.py
-#| code-summary: Source the external `directorize.py` script.
-
-reticulate::source_python("00_Extract/scripts/directorize.py")
-```
 
 ```{python}
-#| label: code_directorize.py
-#| code-summary: This creates the project's analysis directory.
-#| file: "00_Extract/scripts/directorize.py"
-#| eval: false 
+#| label: code_directorize
+#| code-summary: This creates the project's DA directory.
+
+# Automates creation of the DA pipeline directory needed for this project to avoid confusion for those replicating this project, if desired.
+
+import os
+
+def directorize(base_path, structure):
+    # Nested directories
+    for dir_name, subdirs in structure.items():
+        dir_path = os.path.join(base_path, dir_name)
+        os.makedirs(dir_path, exist_ok = True)
+
+        for subdir in subdirs:
+            subdir_path = os.path.join(dir_path, subdir)
+            os.makedirs(subdir_path, exist_ok = True)
 ```
 
+
 ```{python}
-#| label: run_directorize.py
+#| label: run_directorize
 #| code-summary: If the directory folders already exist, it shouldn't cause any issues to allow this code to evaluate during render.
 
 # Define the directory structure
 structure = {
-    "00_Extract/": ["data/", "scripts/"],
-    "01_Transform/": ["data/", "scripts/"],
-    "02_Load/": ["data/", "scripts/"],
-    "03_Present/": ["data/", "scripts/"]
+    "01_Extract/": ["data/", "scripts/"],
+    "02_Transform/": ["data/", "scripts/"],
+    "03_Load/": ["data/", "scripts/"],
+    "04_Present/": ["data/", "scripts/"]
 }
 
 # Create the analysis folder structure in a preferred base directory
@@ -172,36 +177,74 @@ directorize("", structure)
 
 ### Download to Local Machine
 
-```{r}
-#| label: src_importer.py
-#| code-summary: Source the `importer.py` script.
 
-reticulate::source_python(
-    "00_Extract/scripts/importer.py")
+```{python}
+#| label: code_importer
+#| code-summary: This is for importing all scripts and data needed for the project from the web to make things easier for replicating this project. 
+
+# ---- Import data from the web with wget
+import os
+import sys
+import wget
+
+def importer (fileMap):
+    # Download from URL to path and notify when complete
+    for url, file_path in fileMap.items():
+        # Checking file existence
+        if not os.path.exists(file_path):
+            wget.download(url, file_path)
+            print(f"{file_path} written")
+        else:
+            print(f"{file_path} already exists.")
 ```
 
 ```{python}
-#| label: code_importer.py
-#| code-summary: This checks for and downloads the data. 
-#| file: "00_Extract/scripts/importer.py"
-#| eval: false 
-```
-
-```{python}
-#| label: run_importer.py
-#| code-summary: Run `importer()`, passing in the mapped URL to the local directory path destination.
+#| label: run_importer
+#| code-summary: Run `importer()`, passing in the mapped URLs keys to their local directory path destination values.
 
 # Set the url
-url = "https://dnazoo.s3.wasabisys.com/Magicicada_septendecula/magicicada_hifiasm.asm.bp.p_ctg_HiC.fasta.gz"
+fasta_URL = "https://dnazoo.s3.wasabisys.com/Magicicada_septendecula/magicicada_hifiasm.asm.bp.p_ctg_HiC.fasta.gz"
+# Set the desired local file path
+fasta_PATH = "01_Extract/data/magicicada.fasta.gz"
 
-# Set the local file path
-fpath = "00_Extract/data/magicicada.fasta.gz"
+decompress_URL = "https://raw.githubusercontent.com/ericMossotti/Cicada_Data/main/02_Transform/scripts/decompress.py"
+decompress_PATH = "02_Transform/scripts/decompress.py"
+
+asmblydict_URL = "https://raw.githubusercontent.com/ericMossotti/Cicada_Data/main/02_Transform/scripts/assemblyDictionary.py"
+asmblydict_PATH = "02_Transform/scripts/assemblyDictionary.py"
+
+asmblyframe_URL = "https://raw.githubusercontent.com/ericMossotti/Cicada_Data/main/02_Transform/scripts/assemblyFramer.py"
+asmblyframe_PATH = "02_Transform/scripts/assemblyFramer.py"
+
+strint_URL = "https://raw.githubusercontent.com/ericMossotti/Cicada_Data/main/03_Load/scripts/strint.py"
+strint_PATH = "03_Load/scripts/strint.py"
+
+formaframe_URL = "https://raw.githubusercontent.com/ericMossotti/Cicada_Data/main/04_Present/scripts/formaFrame.py"
+formaframe_PATH = "04_Present/scripts/formaFrame.py"
+
+extractIgnore_URL = "https://raw.githubusercontent.com/ericMossotti/Cicada_Data/main/01_Extract/data/.gitignore"
+extractIgnore_PATH = "01_Extract/data/.gitignore"
+
+transformIgnore_URL = "https://raw.githubusercontent.com/ericMossotti/Cicada_Data/main/02_Transform/data/.gitignore"
+transformIgnore_PATH = "02_Transform/data/.gitignore"
+
 
 # Map the url to the file path
-fileMap = {url: fpath}
+fileMap = {
+  fasta_URL: fasta_PATH,
+  decompress_URL: decompress_PATH,
+  asmblydict_URL: asmblydict_PATH,
+  asmblyframe_URL: asmblyframe_PATH,
+  strint_URL: strint_PATH,
+  formaframe_URL: formaframe_PATH,
+  extractIgnore_URL: extractIgnore_PATH,
+  transformIgnore_URL: transformIgnore_PATH
+  }
 
 importer(fileMap)
 ```
+
+
 
 ::: callout-note
 ### The specific link used to download all data from
@@ -219,13 +262,13 @@ The data transformation phase of the pipeline.
 #| label: src_decompress.py
 #| code-summary: Source the `decompress.py` script.
 
-reticulate::source_python("01_Transform/scripts/decompress.py")
+reticulate::source_python("02_Transform/scripts/decompress.py")
 ```
 
 ```{python}
 #| label: code_decompress.py
 #| code-summary: This transforms the compressed file to its decompressed form.
-#| file: "01_Transform/scripts/decompress.py"
+#| file: "02_Transform/scripts/decompress.py"
 #| eval: false 
 ```
 
@@ -234,54 +277,73 @@ reticulate::source_python("01_Transform/scripts/decompress.py")
 #| code-summary: Run `decompress()`, using the compressed path and the desired path to the decompressed file. 
 
 # Set the compressed fasta.gz file variable
-gzFasta = "00_Extract/data/magicicada.fasta.gz"
+gzFasta = "01_Extract/data/magicicada.fasta.gz"
 
 # Set the decompressed fasta file variable
-fasta = "01_Transform/data/magicicada.fasta"
+fasta = "02_Transform/data/magicicada.fasta"
 
 # Pass file paths to the function
 decompress(gzFasta, fasta)
 ```
 
-### Fasta to Text, to DataFrame
+### FASTA to Text, to DataFrame
+
+Sourcing the dataframe formatting script here, as there is some issue with knitr engine and Python with these parts. Seems like some kind of conflict with switching between dataframe and dictionary data types.
 
 ```{r}
 #| label: src_formaFrame_df.py
 #| code-summary: Source the `formaFrame.py` script.
 
-reticulate::source_python("03_Present/scripts/formaFrame.py")
-
+reticulate::source_python("04_Present/scripts/formaFrame.py")
 ```
 
 This chunk should be ran locally instead of with `quarto render`. When working with the source file, change the code-chunk language specifier from `{.bash}` back to `{bash}`. You might have to add the `{bash}` tag entirely back to the div. Not sure how else to go about accomplishing this within my current Quarto project setup. [@trizna2020]
 
-``` bash
+``` {.bash}
 # BASH SCRIPT
 
 # The uncompressed fasta file variable
-fasta=01_Transform/data/magicicada.fasta
+fasta=02_Transform/data/magicicada.fasta
 
 # The text file path variable generated by the script
-summary_stats=01_Transform/data/summary_stats.txt
+summary_stats=02_Transform/data/summary_stats.txt
 
 assembly_stats $fasta > $summary_stats
 ```
 
-Transform the text file into a Python dataframe. I am opting not to blanket change data-types as output format could vary by user preference.
+
+I need to do this for the rendering part to display the code-cell outputs how I wanted them to. However, you can use the bash code chunk further below and comment this code out if you want. This makes it so you can deactivate the bash code chunk for render but still have everything else work without a hitch if you go simply from empty directory to render with this document. 
+
+
+```{python}
+#| label: alternative to bash for summary_stats
+#| code-summary: Instead, using the file from running the assembly_stats Python program as a Bash command pre-render. 
+
+summaryStats_URL = "https://raw.githubusercontent.com/ericMossotti/Cicada_Data/main/02_Transform/data/summary_stats.txt"
+
+summaryStats_PATH = "02_Transform/data/summary_stats.txt"
+
+map_summary = {summaryStats_URL: summaryStats_PATH}
+
+importer(map_summary)
+```
+
+
+Now, transform the text file into a Python dataframe. I am opting not to blanket change data-types as output format could vary by user preference.
 
 ```{r}
 #| label: src_assemblyFramer.py
 #| code-summary: Source the `assemblyFramer.py` script.
 
-# Import  external python script to local library environment
-reticulate::source_python("01_Transform/scripts/assemblyFramer.py")
+# Import external python script to local library environment
+reticulate::source_python("02_Transform/scripts/assemblyFramer.py")
 ```
 
 ::: scroll-code
 ```{python}
 #| label: assemblyFramer_code_view
 #| code-summary: This code transforms text file data into a mult-indexed dataframe. Multi-indexing simplifies query syntax later on.
-#| file: "01_Transform/scripts/assemblyFramer.py"
+#| file: "02_Transform/scripts/assemblyFramer.py"
 #| eval: false 
 ```
 :::
@@ -291,25 +353,25 @@ reticulate::source_python("01_Transform/scripts/assemblyFramer.py")
 #| code-summary: Run `assemblyFramer()`, passing in the path to the text file generated by running the Bash script from earlier. 
 
 # Set the local text file path
-statsPath = "01_Transform/data/summary_stats.txt"
-# Run to yield an multi-indexed dataframe
+statsPath = "02_Transform/data/summary_stats.txt"
+# Run to yield a multi-indexed dataframe
 df = assemblyFramer(statsPath)
 ```
 
-### Fasta to Dictionary
+### FASTA to Dictionary
 
 ```{r}
 #| label: src_assemblyDictionary.py
 #| code-summary: Source the external `assemblyDictionary.py` script.
 
-reticulate::source_python("01_Transform/scripts/assemblyDictionary.py")
+reticulate::source_python("02_Transform/scripts/assemblyDictionary.py")
 ```
 
 ::: scroll-code
 ```{python}
 #| label: code_assemblyDictionary.py
 #| code-summary: This returns a stats dictionary.
-#| file: "01_Transform/scripts/assemblyDictionary.py"
+#| file: "02_Transform/scripts/assemblyDictionary.py"
 #| eval: false 
 ```
 :::
@@ -318,8 +380,7 @@ reticulate::source_python("01_Transform/scripts/assemblyDictionary.py")
 #| label: src_strint.py
 #| code-summary: Source the `strint.py` script.
 
-reticulate::source_python("02_Load/scripts/strint.py")
-
+reticulate::source_python("03_Load/scripts/strint.py")
 ```
 
 ```{python}
@@ -327,8 +388,7 @@ reticulate::source_python("02_Load/scripts/strint.py")
 #| code-summary: Instead of a text file, this skips several time-consuming steps. 
 #| eval: false
 
-statsDict = assemblyDictionary("01_Transform/data/magicicada.fasta")
-
+statsDict = assemblyDictionary("02_Transform/data/magicicada.fasta")
 ```
 
 ## Load
@@ -341,7 +401,7 @@ This is the data loading phase. Following completion of this stage, querying the
 ```{python}
 #| label: code_strint.py
 #| code-summary: This code transforms the strings in the value column of the dataframe to a more visually appealing, thousands-separated form.
-#| file: "02_Load/scripts/strint.py"
+#| file: "03_Load/scripts/strint.py"
 #| eval: false 
 ```
 :::
@@ -500,6 +560,8 @@ This is a slightly formatted view of the Pandas table designed to be more easily
 [:The original dataframe output:](#NutFrame)
 
 ```{python}
+#| label: styled_dataframe
+#| code-summary: The Pandas dataframe as a Styler object for better viewing.
 
 # Display with Style 
 forma_df = df.loc[:].style.pipe(formaFrame)
@@ -516,7 +578,7 @@ forma_df
 library(reticulate)
 ```
 
-Importing the library makes it simpler for inserting the values into the table below. For example, I would have had to type `{r} reticulate::py$ctig_n50`, but now, I only need to type `{r} py$ctig_n50` into the individual cells. I needed to convert the Python into R objects, as the knitr engine used in rendering this document does not seem to display output from execution of inline Python code directly.
+Importing the library makes it simpler for inserting the values into the table below. For example, I would have had to type ``{r} reticulate::py$ctig_n50``, but now, I only need to type ``{r} py$ctig_n50`` into the individual cells. I needed to convert the Python into R objects, as the knitr engine used in rendering this document does not seem to display output from execution of inline Python code directly.
 
 ::: {#ZooTable}
 |                          |                         |                       |                           |
@@ -536,3 +598,4 @@ Importing the library makes it simpler for inserting the values into the table b
 # The un-styled dataframe output
 forma_df.data
 ```
+
