@@ -1,5 +1,7 @@
 # Cicada Data
 
+[Full Publication Link](https://eric-mossotti.quarto.pub/cicada_data/)
+
 This project demonstrates another way of reporting statistical analysis results while independently reproducing DNA Zoo's summary table on the 17-year cicada genome assembly.
 
 ## Objective
