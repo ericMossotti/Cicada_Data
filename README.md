@@ -26,16 +26,16 @@ The analysis pipeline consists of four main stages:
 
 1. Open your IDE for working on quarto projects
 2. In your IDE terminal window (such as Rstudio or VScode):
-   `cd ~/desired_projects_folder`
+   - `cd ~/desired_projects_folder`
 3. Again in terminal:
-   `git clone https://github.com/ericMossotti/Cicada_Data.git`
+   - `git clone https://github.com/ericMossotti/Cicada_Data.git`
 4. Within the cloned repository folder: 
-   `cd ~/desired_folder/Cicada_Data`
-   `quarto create project`
-   `pip install -r requirements.txt`
+   - `cd ~/desired_folder/Cicada_Data`
+   - `quarto create project`
+   - `pip install -r requirements.txt`
 5. Open the file located at `renv/activate.R`, then `Run` it
 6. In IDE console window:
-   Run `renv::restore()`, then likely type `y` for installing packages
+   - Run `renv::restore()`, then likely type `y` for installing packages
 7. Open the `index.qmd` file
 8. Switch to the `Source` view
 9. Go to line 296 (assuming nothing else was changed) and change the code that reads `{.bash}` or `bash`  to `{bash}`. Or simply search `bash` using IDE find tools to find this code.
