@@ -22,12 +22,25 @@ The analysis pipeline consists of four main stages:
 - Uses Python, R, and Bash
 - Provides step-by-step documentation of the data processing
 
-## Getting Started
+## Getting Started with Reproducing this Analysis
 
-1. Clone the index.qmd and styles.scss files from this repository
-2. Ensure you have Python, R, and Bash installed
-3. Install required packages
-4. Run all of the code chunks in the index.qmd file to reproduce the analysis
+1. Open your IDE for working on quarto projects
+2. In your IDE terminal window (such as Rstudio or VScode):
+   `cd ~/desired_projects_folder`
+3. Again in terminal:
+   `git clone https://github.com/ericMossotti/Cicada_Data.git`
+4. Within the cloned repository folder: 
+   `cd ~/desired_folder/Cicada_Data`
+   `quarto create project`
+   `pip install -r requirements.txt`
+5. Open the file located at `renv/activate.R`, then `Run` it
+6. In IDE console window:
+   Run `renv::restore()`, then likely type `y` for installing packages
+7. Open the `index.qmd` file
+8. Switch to the `Source` view
+9. Go to line 296 (assuming nothing else was changed) and change the code that reads `{.bash}` or `bash`  to `{bash}`. Or simply search `bash` using IDE find tools to find this code.
+10. Remain in index.qmd
+11. `Run All` in your IDE to run all code chunks.
 
 ## File Structure
 
@@ -43,7 +56,7 @@ All data used in this project is freely available from a public database hosted 
 
 ## Author
 
-Eric Mossotti (ecmossotti@gmail.com)
+Eric Mossotti
 
 ## License
 
