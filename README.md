@@ -1,6 +1,6 @@
-# Cicada Data Analysis
+# Cicada Data
 
-This project demonstrates another way of reporting statistical analysis results while reproducing DNA Zoo's summary table on the 17-year cicada genome assembly.
+This project demonstrates another way of reporting statistical analysis results while independently reproducing DNA Zoo's summary table on the 17-year cicada genome assembly.
 
 ## Objective
 
