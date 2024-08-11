@@ -10,21 +10,25 @@ $mermaid-label-bg-color: lighten($mermaid-bg-color, 5%) !default;
 $mermaid-node-fg-color: #B0E0E6 !default;
 $mermaid-node-bg-color: lighten($mermaid-bg-color, 5%) !default;
 $mermaid-edge-color: #FF5722 !default;
-//FF5722 #98FB98
+
+
 
 /*-- scss:custom-variables --*/
 $background-color: #222;
 $heading-1: #E0E0E0;
-$heading-2: #B0E0E6;
-$heading-3: #98FB98;
+$heading-2: OrangeRed;
+$heading-3: #99cc00;
 $heading-4: #FFB6C1;
 $heading-5: #DDA0DD;
 $link-unvisited: #4CAF50;
-$link-visited: #9C27B0;
+$link-visited: Salmon;
 $link-hover: #FF9800;
 
+/*-- scss:quarto-variables --*/
+$toc-color: #e6005c !default;
 
 /*-- scss:ids --*/
+
 
 #forma .row_heading.level0.row0,
 #forma .row_heading.level0.row17 {
@@ -45,8 +49,7 @@ $link-hover: #FF9800;
 }
 
 #ZooTable .table .odd {
-  background-color: Peru !important;
-  color: #222 !important;
+  background-color: darken($background-color, 1%) !important;
 }
 
 #ZooTable td {
@@ -60,6 +63,24 @@ $link-hover: #FF9800;
   
 }
 
+#toc-title {
+  color: #2eb8b8 !important;
+}
+
+#TOC > ul > li > a {
+  color: $heading-2; /* First level */
+}
+
+#TOC > ul > li > ul > li > a {
+  color: $heading-3; /* Second level */
+}
+
+#TOC > ul > li > ul > li > ul > li > a {
+  color: $heading-4; /* Third level */
+}
+
+
+
 /*-- scss:classes --*/
 
 // Colors only the dataframe output inside the nutshell bubble //
@@ -71,13 +92,17 @@ $link-hover: #FF9800;
   color: #EEE8AA !important;
 }
 
+.sourceCode .cell-code {
+  padding-bottom: 0.5em !important;
+}
+
 .quarto-title-banner {
   $cicada-green: #4A5D23;
-  $cicada-taupe: #8B7E66;
+ // $cicada-taupe: #8B7E66;
   $cicada-amber: #E09F3E;
   
   background: linear-gradient(
-  to bottom right, $cicada-green, $cicada-taupe, $cicada-amber) !important;
+  to bottom, $cicada-green, $background-color) !important;
 }
 
 .scroll-code {
@@ -88,7 +113,7 @@ $link-hover: #FF9800;
     max-width: 90vw !important;
     overflow-x: hidden !important;
     scrollbar-width: thin !important;
-    scrollbar-color: #33ccff transparent !important;
+    scrollbar-color: Red transparent !important;
     background-color: transparent !important;
 }
 
@@ -132,15 +157,26 @@ p code {
   padding: .4em !important;
 }
 
+p {
+  padding-top: .4em !important;
+  padding-bottom: .5em !important;
+}
+
+
+
 details>summary code {
   background-color: #222;
   color: #F08080 !important;
+  padding-top: .5em !important;
 }
 
 details>summary {
   color: #A8E6CF !important;
+  padding-top: .5em !important;
 ;
 }
+
+
 
 /*-- scss:roots --*/
 :root {
