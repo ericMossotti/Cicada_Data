@@ -25,6 +25,7 @@ bibliography: references.bib
 repo: https://github.com/ericMossotti/Cicada_Data
 source: index.qmd
 
+
 abstract-title: "Objective"
 abstract: |
       To reproduce DNA Zoo's summary table on the 17-year cicada.
@@ -73,6 +74,8 @@ include-in-header:
 
 ## Introduction {.unnumbered}
 
+[The full repo for this project with instructions on how to replicate and run with near verbatim output.](https://github.com/ericMossotti/Cicada_Data)
+
 ### Problem {.unnumbered}
 
 The steps involved in reproducing data can be unclear.
@@ -89,7 +92,7 @@ This might be of interest to the original authors of the article. More generally
 
 All data used within this report was freely available from a public database hosted by DNA Zoo. [@dnazoo.s]
 
-## Pipeline {.unnumbered .column-screen-right}
+### Pipeline {.unnumbered .column-screen-right}
 
 ```{mermaid}
 %%| code-fold: true
@@ -474,7 +477,6 @@ ctig_len = strint(df, "Contigs", "N50")
 
 # Which then finds the desired value or 'Value'
 stat = dataframe.loc[(category, label), "Value"]
-
 ```
 :::
 :::
@@ -497,7 +499,6 @@ sfld_len = strint(statsDict, "Scaffold Stats", "total_bps")
 sfld_count = strint(statsDict, "Scaffold Stats", "sequence_count")
 sfld_n50 = strint(statsDict, "Scaffold Stats", "N50")
 sfld_max = strint(statsDict, "Scaffold Stats", "longest")
-
 ```
 
 ::: {.callout-tip appearance="simple"}
