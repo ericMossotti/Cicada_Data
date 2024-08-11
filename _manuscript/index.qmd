@@ -25,6 +25,7 @@ bibliography: references.bib
 repo: https://github.com/ericMossotti/Cicada_Data
 source: index.qmd
 
+
 abstract-title: "Objective"
 abstract: |
       To reproduce DNA Zoo's summary table on the 17-year cicada.
@@ -73,6 +74,8 @@ include-in-header:
 
 ## Introduction {.unnumbered}
 
+[The full repo for this project with instructions on how to replicate and run with near verbatim output.](https://github.com/ericMossotti/Cicada_Data)
+
 ### Problem {.unnumbered}
 
 The steps involved in reproducing data can be unclear.
@@ -89,7 +92,7 @@ This might be of interest to the original authors of the article. More generally
 
 All data used within this report was freely available from a public database hosted by DNA Zoo. [@dnazoo.s]
 
-## Pipeline {.unnumbered .column-screen-right}
+### Pipeline {.unnumbered .column-screen-right}
 
 ```{mermaid}
 %%| code-fold: true
@@ -140,7 +143,7 @@ This would be the data extraction phase of the DA pipeline.
 
 ```{python}
 #| label: code_directorize
-#| code-summary: This creates the project's DA directory.
+#| code-summary: A function used further below to establish the project's DA directory.
 
 # Automates creation of the DA pipeline directory needed for this project to avoid confusion for those replicating this project, if desired.
 
@@ -177,10 +180,11 @@ directorize("", structure)
 
 ### Download to Local Machine
 
+If you want the exact verbatim output, then delete the cloned folder structure (01_Extract through the 04_Present and run this code).
 
 ```{python}
 #| label: code_importer
-#| code-summary: This is for importing all scripts and data needed for the project from the web to make things easier for replicating this project. 
+#| code-summary: Importing all scripts and data needed for the project from the web to make things easier for replicating this project. If you want the exact verbatim output, then delete the cloned folder structure (01_Extract through the 04_Present and run this code). Otherwise, it's ok to re-run this with the scripts already there. 
 
 # ---- Import data from the web with wget
 import os
@@ -267,7 +271,7 @@ reticulate::source_python("02_Transform/scripts/decompress.py")
 
 ```{python}
 #| label: code_decompress.py
-#| code-summary: This transforms the compressed file to its decompressed form.
+#| code-summary: Transform the compressed file to its decompressed form.
 #| file: "02_Transform/scripts/decompress.py"
 #| eval: false 
 ```
@@ -342,7 +346,7 @@ reticulate::source_python("02_Transform/scripts/assemblyFramer.py")
 ::: scroll-code
 ```{python}
 #| label: assemblyFramer_code_view
-#| code-summary: This code transforms text file data into a mult-indexed dataframe. Multi-indexing simplifies query syntax later on.
+#| code-summary: Transform the text file data into a mult-indexed dataframe. Multi-indexing simplifies query syntax later on.
 #| file: "02_Transform/scripts/assemblyFramer.py"
 #| eval: false 
 ```
@@ -370,7 +374,7 @@ reticulate::source_python("02_Transform/scripts/assemblyDictionary.py")
 ::: scroll-code
 ```{python}
 #| label: code_assemblyDictionary.py
-#| code-summary: This returns a stats dictionary.
+#| code-summary: Return a stats dictionary.
 #| file: "02_Transform/scripts/assemblyDictionary.py"
 #| eval: false 
 ```
@@ -410,7 +414,7 @@ This is the data loading phase. Following completion of this stage, querying the
 
 ```{python}
 #| label: run_strint.py
-#| code-summary: Calls `strint()`, with the simpflified query syntax noted earlier. One can simply specify the literal 'Category' and 'Label' keys to return the desired value.
+#| code-summary: Call `strint()`, with the simpflified query syntax noted earlier. Then simply specify the literal 'Category' and 'Label' keys to return the desired value.
 #| eval: true
 
 #---- Contigs
@@ -474,7 +478,6 @@ ctig_len = strint(df, "Contigs", "N50")
 
 # Which then finds the desired value or 'Value'
 stat = dataframe.loc[(category, label), "Value"]
-
 ```
 :::
 :::
@@ -497,7 +500,6 @@ sfld_len = strint(statsDict, "Scaffold Stats", "total_bps")
 sfld_count = strint(statsDict, "Scaffold Stats", "sequence_count")
 sfld_n50 = strint(statsDict, "Scaffold Stats", "N50")
 sfld_max = strint(statsDict, "Scaffold Stats", "longest")
-
 ```
 
 ::: {.callout-tip appearance="simple"}
@@ -588,6 +590,7 @@ Importing the library makes it simpler for inserting the values into the table b
 | **Scaffold length (bp)** | **Number of scaffolds** | **Scaffold N50 (bp)** | **Longest scaffold (bp)** |
 | `{r} py$sfld_len`        | `{r} py$sfld_count`     | `{r} py$sfld_n50`     | `{r} py$ sfld_max`        |
 :::
+
 
 ## :x NutFrame {.unnumbered .unlisted}
 
