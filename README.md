@@ -12,46 +12,55 @@ To reproduce DNA Zoo's summary table on the 17-year cicada and provide an access
 
 The analysis pipeline consists of four main stages:
 
-1. Extract
-2. Transform
-3. Load
-4. Present
+1.  Extract
+2.  Transform
+3.  Load
+4.  Present
 
 ## Key Features
 
-- Reproduces genome assembly statistics for the 17-year cicada
-- Implements an ETL (Extract, Transform, Load) pipeline
-- Uses Python, R, and Bash
-- Provides step-by-step documentation of the data processing
+-   Reproduces genome assembly statistics for the 17-year cicada
+-   Implements an ETL (Extract, Transform, Load) pipeline
+-   Uses Python, R, and Bash
+-   Provides step-by-step documentation of the data processing
 
 ## Getting Started with Reproducing this Analysis
 
-1. Open your IDE for working on quarto projects
-2. In your IDE terminal window (such as Rstudio or VScode):
-   - `cd ~/desired_projects_folder`
-3. Again in terminal:
-   - `git clone https://github.com/ericMossotti/Cicada_Data.git`
-4. Within the cloned repository folder: 
-   - `cd ~/desired_folder/Cicada_Data`
-   - `quarto create project`, select `default`
-   - `pip install -r requirements.txt`
-5. Open the file located at `renv/activate.R`, then `Run` it
-6. In IDE console window:
-   - Run `renv::restore()`, then likely type `y` for installing packages
-7. Open the `index.qmd` file
-8. Switch to the `Source` view
-9. Go to line 296 (assuming nothing else was changed) and change the code that reads `{.bash}` or `bash`  to `{bash}`.
-    - Or simply search `bash` using IDE find tools to find this code.
-11. Remain in `index.qmd`
-12. `Run All` in your IDE to run all code chunks.
+First, have R and Python installed globally on your system.
+
+In Rstudio:
+
+Go to: `File`
+
+Click `New Project`
+
+Select `Version Control`
+
+Paste this repo's code link
+
+in R console:
+
+``` r
+install.packages("renv")
+```
+
+``` r
+renv::restore()
+```
+
+``` r
+renv::snapshot()
+```
+
+Follow prompts to install R and Python packages during these steps where necessary. If doing this without an R console, you might be able to run that R code in R-code chunk(s) within the `index.qmd` file of the project.
 
 ## File Structure
 
-- `01_Extract/`: Data extraction scripts and raw data
-- `02_Transform/`: Data transformation scripts and intermediate data
-- `03_Load/`: Data loading scripts
-- `04_Present/`: Data presentation scripts and final outputs
-- `index.qmd`: Quarto markdown document containing the analysis
+-   `01_Extract/`: Data extraction scripts and raw data
+-   `02_Transform/`: Data transformation scripts and intermediate data
+-   `03_Load/`: Data loading scripts
+-   `04_Present/`: Data presentation scripts and final outputs
+-   `index.qmd`: Quarto markdown document containing the analysis
 
 ## Data Source
 
