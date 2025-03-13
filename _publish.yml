@@ -1,4 +1,4 @@
 - source: project
   quarto-pub:
     - id: 74a1b84d-c5b8-45dc-83fd-725a8d0c7f2c
-      url: 'https://eric-mossotti.quarto.pub/cicada_data'
+      url: https://eric-mossotti.quarto.pub/cicada_data
